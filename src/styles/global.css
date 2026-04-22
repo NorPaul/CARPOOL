@@ -1,0 +1,309 @@
+/* ============================================
+   CARPOOL TecNM Colima — Sistema de Diseño Global
+   Paleta: Deep Navy → Vivid Azure ("Oceanic Professional")
+   Fuente: Outfit (Google Fonts)
+   ============================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap');
+
+/* ─── Variables ─────────────────────────────── */
+:root {
+  /* Fondos */
+  --bg-dark: #020617;
+  --bg-gradient: radial-gradient(circle at 50% -20%, #0f172a 0%, #020617 100%);
+  --surface-color: #0f172a;
+  --surface-elevated: #1e293b;
+  --glass-bg: rgba(15, 23, 42, 0.8);
+
+  /* Sistema Azul */
+  --blue-deep: #1e3a8a;
+  --blue-primary: #2563eb;
+  --blue-bright: #38bdf8;
+  --blue-glow: rgba(37, 99, 235, 0.3);
+
+  /* Acentos */
+  --accent-vivid: #0ea5e9;
+  --accent-subtle: rgba(14, 165, 233, 0.1);
+
+  /* Peligro */
+  --danger-red: #ef4444;
+  --danger-dark: #991b1b;
+  --danger-soft: rgba(239, 68, 68, 0.1);
+  --danger-text: #fca5a5;
+
+  /* Texto */
+  --text-bright: #f8fafc;
+  --text-main: #e2e8f0;
+  --text-muted: #64748b;
+
+  /* UI */
+  --border: rgba(148, 163, 184, 0.1);
+  --border-active: rgba(37, 99, 235, 0.5);
+  --radius: 16px;
+  --shadow-soft: 0 10px 40px -10px rgba(0, 0, 0, 0.5);
+  --transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ─── Reset ─────────────────────────────────── */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body, #root {
+  height: 100%;
+}
+
+body {
+  font-family: 'Outfit', -apple-system, sans-serif;
+  background: var(--bg-gradient);
+  background-attachment: fixed;
+  color: var(--text-main);
+  line-height: 1.6;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ─── Contenedor de App ──────────────────────── */
+.app-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  max-width: 500px;
+  margin: 0 auto;
+  background: var(--surface-color);
+  position: relative;
+  box-shadow: 0 0 100px rgba(0, 0, 0, 0.8);
+}
+
+.app-container.auth-mode {
+  background: transparent;
+  box-shadow: none;
+}
+
+.main-content {
+  flex: 1;
+  padding: 24px;
+  padding-bottom: 90px;
+  overflow-y: auto;
+}
+
+/* ─── Tipografía Gradiente ───────────────────── */
+.text-gradient {
+  background: linear-gradient(135deg, #f8fafc 0%, #38bdf8 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ─── Cards ─────────────────────────────────── */
+.card {
+  background: linear-gradient(110deg, #111827 0%, #0f172a 100%);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: var(--shadow-soft);
+  position: relative;
+  overflow: hidden;
+  transition: var(--transition);
+}
+
+.card:hover {
+  transform: translateY(-4px);
+  border-color: var(--border-active);
+  box-shadow: 0 20px 50px -12px rgba(0, 0, 0, 0.6);
+}
+
+/* Inner glow sutil en cards */
+.card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: radial-gradient(circle at top right, rgba(37, 99, 235, 0.05), transparent 70%);
+  pointer-events: none;
+}
+
+/* ─── Formularios ───────────────────────────── */
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-label {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 700;
+  margin-bottom: 8px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.form-control {
+  width: 100%;
+  background: #020617;
+  border: 1px solid var(--border);
+  color: var(--text-bright);
+  padding: 14px 18px;
+  border-radius: var(--radius);
+  font-size: 1rem;
+  font-family: 'Outfit', sans-serif;
+  transition: var(--transition);
+}
+
+.form-control:focus {
+  outline: none;
+  border-color: var(--blue-primary);
+  background: #020617;
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1), 0 0 30px rgba(37, 99, 235, 0.1);
+}
+
+.form-control::placeholder {
+  color: var(--text-muted);
+}
+
+/* ─── Botones ───────────────────────────────── */
+.btn {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  padding: 14px 28px;
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius);
+  font-size: 1rem;
+  font-weight: 600;
+  font-family: 'Outfit', sans-serif;
+  cursor: pointer;
+  text-decoration: none;
+  transition: var(--transition);
+  box-shadow: 0 4px 20px -5px rgba(37, 99, 235, 0.4);
+  letter-spacing: 0.02em;
+}
+
+.btn:hover {
+  transform: translateY(-2px) scale(1.01);
+  box-shadow: 0 10px 30px -5px rgba(37, 99, 235, 0.6);
+  filter: brightness(1.1);
+}
+
+.btn-outline {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-main);
+  box-shadow: none;
+}
+
+.btn-outline:hover {
+  border-color: var(--blue-primary);
+  background: rgba(37, 99, 235, 0.05);
+  filter: none;
+}
+
+/* ─── Auth Card Glassmorphism ────────────────── */
+.auth-card {
+  background: rgba(15, 23, 42, 0.7);
+  backdrop-filter: blur(30px);
+  -webkit-backdrop-filter: blur(30px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 24px;
+  padding: 40px;
+  box-shadow: 0 40px 100px rgba(0, 0, 0, 0.6);
+  width: 100%;
+}
+
+.auth-logo {
+  font-size: 3rem;
+  font-weight: 800;
+  text-align: center;
+  margin-bottom: 10px;
+  background: linear-gradient(to right, #60a5fa, #3b82f6);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ─── Stats ─────────────────────────────────── */
+.stat-box {
+  background: rgba(37, 99, 235, 0.05);
+  border: 1px solid rgba(37, 99, 235, 0.1);
+  padding: 24px 16px;
+  border-radius: var(--radius);
+  text-align: center;
+  transition: var(--transition);
+}
+
+.stat-box h3 {
+  font-size: 2.2rem;
+  color: var(--blue-bright);
+  font-weight: 800;
+}
+
+/* ─── Alertas ───────────────────────────────── */
+.alert {
+  padding: 16px;
+  border-radius: var(--radius);
+  font-size: 0.9rem;
+  font-weight: 500;
+  margin-bottom: 24px;
+  border: 1px solid transparent;
+  animation: slideUp 0.4s ease-out;
+}
+
+.alert-error,
+.alert-danger {
+  background: var(--danger-soft);
+  color: var(--danger-text);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  border-left: 4px solid var(--danger-red);
+}
+
+.alert-success {
+  background: rgba(16, 185, 129, 0.1);
+  color: #10b981;
+  border: 1px solid rgba(16, 185, 129, 0.2);
+  border-left: 4px solid #10b981;
+}
+
+.error-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.error-list li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.error-list li::before {
+  content: '•';
+  color: var(--danger-red);
+  font-weight: bold;
+}
+
+/* ─── Animaciones ───────────────────────────── */
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-up {
+  animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* ─── Utilidades ─────────────────────────────── */
+.text-center  { text-align: center; }
+.mb-4         { margin-bottom: 16px; }
+.mb-6         { margin-bottom: 24px; }
+.mt-4         { margin-top: 16px; }

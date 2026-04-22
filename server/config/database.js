@@ -1,0 +1,33 @@
+// server/config/database.js
+// Configuración de Sequelize con MySQL.
+// Las credenciales se leen desde variables de entorno (.env en la raíz de /server).
+//
+// Uso:
+//   const sequelize = require('./config/database');
+//   await sequelize.authenticate(); // verifica conexión
+
+const { Sequelize } = require('sequelize');
+
+/**
+ * Instancia de Sequelize configurada para MySQL.
+ * @type {Sequelize}
+ */
+const sequelize = new Sequelize(
+  process.env.DB_NAME,
+  process.env.DB_USER,
+  process.env.DB_PASS,
+  {
+    host:    process.env.DB_HOST || 'localhost',
+    port:    parseInt(process.env.DB_PORT || '3306', 10),
+    dialect: 'mysql',
+    logging: process.env.NODE_ENV === 'development' ? console.log : false,
+    pool: {
+      max: 5,
+      min: 0,
+      acquire: 30000,
+      idle:    10000,
+    },
+  }
+);
+
+module.exports = sequelize;
