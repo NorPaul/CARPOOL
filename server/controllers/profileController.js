@@ -1,4 +1,4 @@
-const { User, Vehiculo, Calificacion } = require('../models');
+const { User, Vehiculo, Calificacion, Viaje } = require('../models');
 
 exports.show = async (req, res) => {
   try {
@@ -20,12 +20,15 @@ exports.show = async (req, res) => {
     const totalCalificaciones = calResult[0]?.total || 0;
 
     // Vehículos
-    const vehiculos = await Vehiculo.findAll({ where: { IDUsuario: userId } });
+    const vehiculos = await Vehiculo.findAll({ where: { IdUsuario: userId } });
 
     // Reseñas
     const resenas = await Calificacion.findAll({
       where: { IdUsuario: userId },
-      include: [{ model: User, as: 'emisor', attributes: ['NombreCompleto'] }],
+      include: [
+        { model: User, as: 'emisor', attributes: ['NombreCompleto'] },
+        { model: Viaje, as: 'viaje' }
+      ],
       order: [['FechaCreacion', 'DESC']],
       limit: 10,
     });
@@ -40,5 +43,25 @@ exports.show = async (req, res) => {
   } catch (error) {
     console.error('Error fetching profile:', error);
     res.status(500).json({ message: 'Error al obtener perfil' });
+  }
+};
+
+exports.update = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { NombreCompleto, Telefono } = req.body;
+    
+    const usuario = await User.findByPk(userId);
+    if (!usuario) return res.status(404).json({ message: 'Usuario no encontrado' });
+
+    await usuario.update({
+      NombreCompleto: NombreCompleto || usuario.NombreCompleto,
+      Telefono: Telefono || usuario.Telefono
+    });
+
+    res.json({ message: 'Perfil actualizado correctamente', usuario });
+  } catch (error) {
+    console.error('Error updating profile:', error);
+    res.status(500).json({ message: 'Error al actualizar perfil' });
   }
 };

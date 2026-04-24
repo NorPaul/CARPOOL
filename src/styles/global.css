@@ -108,12 +108,18 @@ body {
   position: relative;
   overflow: hidden;
   transition: var(--transition);
+  animation: cardReveal 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) backwards;
 }
 
 .card:hover {
-  transform: translateY(-4px);
-  border-color: var(--border-active);
-  box-shadow: 0 20px 50px -12px rgba(0, 0, 0, 0.6);
+  transform: translateY(-6px) scale(1.01);
+  border-color: var(--blue-primary);
+  box-shadow: 0 25px 60px -12px rgba(0, 0, 0, 0.7);
+}
+
+@keyframes cardReveal {
+  from { opacity: 0; transform: translateY(20px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
 }
 
 /* Inner glow sutil en cards */
@@ -185,9 +191,14 @@ body {
 }
 
 .btn:hover {
-  transform: translateY(-2px) scale(1.01);
-  box-shadow: 0 10px 30px -5px rgba(37, 99, 235, 0.6);
-  filter: brightness(1.1);
+  transform: translateY(-3px) scale(1.02);
+  box-shadow: 0 15px 35px -5px rgba(37, 99, 235, 0.6);
+  filter: brightness(1.15);
+}
+
+.btn:active {
+  transform: translateY(0) scale(0.96);
+  transition: all 0.1s;
 }
 
 .btn-outline {
@@ -201,6 +212,13 @@ body {
   border-color: var(--blue-primary);
   background: rgba(37, 99, 235, 0.05);
   filter: none;
+}
+
+/* Hover específico para acciones de peligro/cancelar */
+.btn-outline[style*="color: var(--danger-red)"]:hover {
+  border-color: var(--danger-red) !important;
+  background: rgba(239, 68, 68, 0.1) !important;
+  color: #fff !important;
 }
 
 /* ─── Auth Card Glassmorphism ────────────────── */
@@ -361,16 +379,28 @@ body {
 @keyframes slideUp {
   from {
     opacity: 0;
-    transform: translateY(20px);
+    transform: translateY(40px) scale(0.95);
   }
   to {
     opacity: 1;
-    transform: translateY(0);
+    transform: translateY(0) scale(1);
   }
 }
 
 .animate-up {
-  animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: slideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Efecto de shimmer para carga */
+.skeleton {
+  background: linear-gradient(90deg, var(--surface-color) 25%, var(--surface-elevated) 50%, var(--surface-color) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
 }
 
 /* ─── Navegación Inferior Flotante ─────────── */
@@ -413,8 +443,102 @@ body {
   filter: drop-shadow(0 0 8px var(--blue-bright));
 }
 
+/* ─── Landing Page ──────────────────────────── */
+.landing-container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.landing-hero {
+  padding: 60px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+}
+
+.badge-new {
+  display: inline-block;
+  background: rgba(37, 99, 235, 0.1);
+  color: var(--blue-bright);
+  padding: 6px 12px;
+  border-radius: 100px;
+  font-size: 0.7rem;
+  font-weight: 800;
+  margin-bottom: 20px;
+  border: 1px solid var(--blue-glow);
+}
+
+.hero-title {
+  font-size: 2.8rem;
+  line-height: 1.1;
+  font-weight: 800;
+  margin-bottom: 20px;
+}
+
+.hero-description {
+  color: var(--text-muted);
+  font-size: 1.1rem;
+  margin-bottom: 32px;
+}
+
+.hero-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.car-blob {
+  width: 100%;
+  aspect-ratio: 16/9;
+  background: radial-gradient(circle, var(--blue-glow) 0%, transparent 70%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--blue-primary);
+}
+
+.features-grid {
+  display: grid;
+  gap: 20px;
+  padding: 40px 24px;
+}
+
+.feature-card {
+  background: var(--surface-elevated);
+  padding: 24px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+}
+
+.feature-icon {
+  font-size: 2rem;
+  margin-bottom: 16px;
+}
+
+.feature-card h3 {
+  margin-bottom: 8px;
+  font-size: 1.2rem;
+}
+
+.feature-card p {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+.landing-footer {
+  margin-top: auto;
+  padding: 40px 24px;
+  text-align: center;
+  border-top: 1px solid var(--border);
+  color: var(--text-muted);
+  font-size: 0.8rem;
+}
+
 /* ─── Utilidades ─────────────────────────────── */
 .text-center  { text-align: center; }
 .mb-4         { margin-bottom: 16px; }
 .mb-6         { margin-bottom: 24px; }
+.mb-8         { margin-bottom: 32px; }
 .mt-4         { margin-top: 16px; }
+.mt-6         { margin-top: 24px; }

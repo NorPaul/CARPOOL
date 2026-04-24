@@ -46,6 +46,10 @@ const Viaje = sequelize.define('Viaje', {
     type:      DataTypes.TEXT,
     allowNull: true,
   },
+  ObservacionesFinales: {
+    type:      DataTypes.TEXT,
+    allowNull: true,
+  },
   IdEstado: {
     type:      DataTypes.BIGINT.UNSIGNED,
     allowNull: false,

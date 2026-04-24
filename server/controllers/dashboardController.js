@@ -23,7 +23,7 @@ exports.getDashboardData = async (req, res) => {
     });
 
     // Calificación promedio
-    const califs = await Calificacion.findAll({ where: { IdCalificado: userId } });
+    const califs = await Calificacion.findAll({ where: { IdUsuario: userId } });
     const promedio = califs.length > 0 ? (califs.reduce((acc, curr) => acc + curr.Estrellas, 0) / califs.length).toFixed(1) : '0.0';
 
     // Notificaciones: Solicitudes rechazadas o expulsado (IdEstado 3 o 5)

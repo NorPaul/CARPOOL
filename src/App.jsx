@@ -13,6 +13,7 @@ import CalificacionCreate from './pages/Calificaciones/CalificacionCreate';
 import SolicitudesPage from './pages/SolicitudesPage';
 import ChatPage        from './pages/ChatPage';
 import ProfilePage     from './pages/ProfilePage';
+import ProfileEdit     from './pages/ProfileEdit';
 
 import './styles/global.css';
 
@@ -83,6 +84,7 @@ function App() {
 
         {/* Perfil */}
         <Route path="/perfil" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
+        <Route path="/perfil/editar" element={<ProtectedRoute><ProfileEdit /></ProtectedRoute>} />
         <Route path="/perfil/:userId" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
 
         {/* ─── Fallback ─────────────────────── */}

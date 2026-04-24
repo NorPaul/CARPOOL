@@ -61,9 +61,9 @@ Mensaje.belongsTo(Viaje, { foreignKey: 'IdViaje', as: 'viaje' });
 Mensaje.belongsTo(User, { foreignKey: 'IdRemitente', as: 'remitente' });
 
 // Calificaciones
-User.hasMany(Calificacion, { foreignKey: 'IdCalificado', as: 'calificacionesRecibidas' });
-Calificacion.belongsTo(User, { foreignKey: 'IdCalificado', as: 'calificado' });
-Calificacion.belongsTo(User, { foreignKey: 'IdCalificador', as: 'calificador' });
+User.hasMany(Calificacion, { foreignKey: 'IdUsuario', as: 'calificacionesRecibidas' });
+Calificacion.belongsTo(User, { foreignKey: 'IdUsuario', as: 'calificado' });
+Calificacion.belongsTo(User, { foreignKey: 'IdEmisor', as: 'emisor' });
 Calificacion.belongsTo(Viaje, { foreignKey: 'IdViaje', as: 'viaje' });
 
 // Invitados

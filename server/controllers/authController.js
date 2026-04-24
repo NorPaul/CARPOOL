@@ -45,31 +45,34 @@ exports.login = async (req, res) => {
 
 exports.register = async (req, res) => {
   try {
-    const { name, email, password, phone } = req.body;
+    const { NombreCompleto, Correo, Contrasena, Telefono } = req.body;
+
+    if (!NombreCompleto || !Correo || !Contrasena) {
+      return res.status(400).json({ message: 'Todos los campos obligatorios son requeridos.' });
+    }
 
     // Validación de correo institucional (@colima.tecnm.mx)
-    const emailRegex = /^[a-zA-Z0-9._%+-]+@colima\.tecnm\.mx$/;
-    if (!emailRegex.test(email)) {
-      return res.status(400).json({ message: 'Debe utilizar su correo institucional (@colima.tecnm.mx).' });
+    if (!Correo.endsWith('@colima.tecnm.mx')) {
+      return res.status(400).json({ message: 'Solo se permiten correos institucionales (@colima.tecnm.mx).' });
     }
 
     // Verificar si el usuario ya existe
-    const existingUser = await User.findOne({ where: { Correo: email } });
+    const existingUser = await User.findOne({ where: { Correo: Correo } });
     if (existingUser) {
       return res.status(400).json({ message: 'Este correo ya se encuentra registrado.' });
     }
 
-    if (password.length < 8) {
+    if (Contrasena.length < 8) {
       return res.status(400).json({ message: 'La contraseña debe tener al menos 8 caracteres.' });
     }
 
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const hashedPassword = await bcrypt.hash(Contrasena, 10);
     
     const newUser = await User.create({
-      NombreCompleto: name,
-      Correo: email,
+      NombreCompleto,
+      Correo,
       Contrasena: hashedPassword,
-      Telefono: phone || null,
+      Telefono: Telefono || null,
       Activo: true
     });
 
@@ -82,9 +85,9 @@ exports.register = async (req, res) => {
     const userData = newUser.toJSON();
     delete userData.Contrasena;
 
-    res.status(201).json({ message: 'User registered successfully', token, user: userData });
+    res.status(201).json({ message: 'Usuario registrado con éxito', token, user: userData });
   } catch (error) {
     console.error('Registration error:', error);
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ message: 'Error en el servidor' });
   }
 };

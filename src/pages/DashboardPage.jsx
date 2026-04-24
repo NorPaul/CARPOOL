@@ -54,23 +54,23 @@ function DashboardPage() {
     navigate('/');
   };
 
-  if (loading) return <Layout><p style={{ color: 'var(--text-muted)' }}>Cargando panel...</p></Layout>;
+  if (loading) return <Layout><div className="text-center" style={{ padding: '40px' }}><p style={{ color: 'var(--text-muted)' }}>Cargando tu panel...</p></div></Layout>;
 
   return (
     <Layout>
       <div className="animate-up">
         
         {/* Header Section */}
-        <header style={{ marginBottom: '32px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+        <header style={{ marginBottom: '32px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div>
-            <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '4px' }}>Panel Principal</p>
+            <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '4px' }}>Panel Principal</p>
             <h1 className="text-gradient" style={{ fontSize: '2.4rem', fontWeight: 800, letterSpacing: '-0.03em' }}>
               Hola, {user?.NombreCompleto?.split(' ')[0]}
             </h1>
           </div>
-          <div style={{ width: '50px', height: '50px', background: 'var(--blue-deep)', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 10px 20px rgba(0,0,0,0.3)' }}>
+          <Link to="/perfil" style={{ width: '50px', height: '50px', background: 'linear-gradient(135deg, var(--blue-primary), #8b5cf6)', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 10px 20px rgba(0,0,0,0.3)', textDecoration: 'none' }}>
             <span style={{ fontWeight: 800, color: 'white', fontSize: '1.2rem' }}>{user?.NombreCompleto?.charAt(0)}</span>
-          </div>
+          </Link>
         </header>
 
         {/* Reputation & Earnings Row */}
@@ -97,7 +97,7 @@ function DashboardPage() {
               <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>
             </div>
             <h3>{data.stats.viajesConductor}</h3>
-            <p>Como Conductor</p>
+            <p>Conductores</p>
           </div>
 
           <div className="stat-card">
@@ -105,7 +105,7 @@ function DashboardPage() {
               <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
             </div>
             <h3>{data.stats.viajesPasajero}</h3>
-            <p>Como Pasajero</p>
+            <p>Pasajeros</p>
           </div>
         </div>
 
@@ -117,7 +117,7 @@ function DashboardPage() {
             </div>
             <div style={{ flex: 1 }}>
               <p style={{ fontWeight: 700, fontSize: '0.95rem', color: 'white' }}>¡Tu viaje ha comenzado!</p>
-              <p style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.8)' }}>Vas camino a <strong>{v.ruta?.destino?.Nombre}</strong> con {v.conductor?.NombreCompleto?.split(' ')[0]}.</p>
+              <p style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.8)' }}>Camino a <strong>{v.ruta?.destino?.Nombre}</strong> con {v.conductor?.NombreCompleto?.split(' ')[0]}.</p>
             </div>
             <div style={{ color: 'white', opacity: 0.8 }}>
               <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"></path></svg>
@@ -155,8 +155,8 @@ function DashboardPage() {
               <svg width="20" height="20" fill="white" viewBox="0 0 24 24"><path d="M12 22a2 2 0 002-2h-4a2 2 0 002 2zm10-6v-5a8 8 0 00-5-7.3V3a3 3 0 00-6 0v.7A8 8 0 002 11v5l-2 2v1h24v-1l-2-2z"/></svg>
             </div>
             <div style={{ flex: 1 }}>
-              <p style={{ fontWeight: 700, fontSize: '0.95rem', color: 'white' }}>{data.stats.pendientesCount} Solicitudes pendientes</p>
-              <p style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.7)' }}>Hay personas esperando respuesta para viajar contigo</p>
+              <p style={{ fontWeight: 700, fontSize: '0.95rem', color: 'white' }}>{data.stats.pendientesCount} Solicitudes</p>
+              <p style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.7)' }}>Tienes pasajeros esperando respuesta</p>
             </div>
             <svg width="20" height="20" fill="none" stroke="white" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"></path></svg>
           </Link>
@@ -164,7 +164,7 @@ function DashboardPage() {
 
         {/* Main Actions */}
         <div style={{ marginBottom: '40px' }}>
-          <p style={{ color: 'var(--text-muted)', fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '16px' }}>¿Qué quieres hacer hoy?</p>
+          <p style={{ color: 'var(--text-muted)', fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '16px' }}>¿A dónde vamos hoy?</p>
           <div style={{ display: 'grid', gap: '12px' }}>
             <Link to="/viajes/nuevo" className="btn action-btn">
               <div className="btn-icon" style={{ background: 'rgba(255,255,255,0.2)' }}>
@@ -181,8 +181,8 @@ function DashboardPage() {
           </div>
         </div>
 
-        {/* Quick Footer Links */}
-        <footer style={{ marginTop: '48px', borderTop: '1px solid var(--border)', paddingTop: '24px', textAlign: 'center' }}>
+        {/* Logout Quick Action */}
+        <footer style={{ marginTop: '24px', textAlign: 'center' }}>
           <button onClick={handleLogout} className="logout-btn">
             <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
             Cerrar Sesión

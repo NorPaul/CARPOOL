@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../hooks/useAuth';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, Link } from 'react-router-dom';
 import Layout from '../components/Layout';
 
 function ProfilePage() {
@@ -9,21 +9,31 @@ function ProfilePage() {
   const navigate = useNavigate();
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     const fetchProfile = async () => {
+      setLoading(true);
+      setError(null);
       try {
         const token = localStorage.getItem('carpool_token');
+        // Si no hay userId en la URL, usamos la ruta base para el perfil propio
         const url = userId ? `/api/perfil/${userId}` : '/api/perfil';
+        
         const res = await fetch(url, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
+        
         if (res.ok) {
           const data = await res.json();
           setProfile(data);
+        } else {
+          const errData = await res.json();
+          setError(errData.message || 'No se pudo cargar el perfil');
         }
-      } catch (error) {
-        console.error('Error fetching profile', error);
+      } catch (err) {
+        console.error('Error fetching profile', err);
+        setError('Error de conexión con el servidor');
       } finally {
         setLoading(false);
       }
@@ -31,132 +41,159 @@ function ProfilePage() {
     fetchProfile();
   }, [userId]);
 
+  const handleDeleteVehiculo = async (id) => {
+    try {
+      const token = localStorage.getItem('carpool_token');
+      const res = await fetch(`/api/vehiculos/${id}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.ok) {
+        setProfile(prev => ({
+          ...prev,
+          vehiculos: prev.vehiculos.filter(v => v.IdVehiculo !== id)
+        }));
+      }
+    } catch (error) {
+      console.error('Error deleting vehicle', error);
+    }
+  };
+
   const handleLogout = () => {
     logout();
     navigate('/');
   };
 
-  if (loading) return <Layout><p style={{ color: 'var(--text-muted)' }}>Cargando perfil...</p></Layout>;
-  if (!profile) return <Layout><p style={{ color: 'var(--text-muted)' }}>No se pudo cargar el perfil.</p></Layout>;
+  if (loading) return <Layout><div className="text-center" style={{padding:'40px'}}><p style={{ color: 'var(--text-muted)' }}>Cargando perfil...</p></div></Layout>;
+  
+  if (error || !profile) return (
+    <Layout>
+      <div className="card text-center" style={{marginTop:'40px'}}>
+        <p style={{ color: 'var(--danger-text)' }}>{error || 'Perfil no disponible'}</p>
+        <button onClick={() => navigate(-1)} className="btn btn-outline" style={{width:'auto', marginTop:'16px'}}>Volver</button>
+      </div>
+    </Layout>
+  );
 
   const isOwnProfile = !userId || Number(userId) === user?.IdUsuario;
+  const { usuario, calificacion, totalCalificaciones, vehiculos, resenas } = profile;
 
   return (
     <Layout>
       <div className="animate-up" style={{ marginTop: '10px' }}>
-        <h2 style={{ fontSize: '1.5rem', marginBottom: '24px' }}>Perfil de Usuario</h2>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '24px' }}>
+          {!isOwnProfile && <button onClick={() => navigate(-1)} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: '1.2rem' }}>&larr;</button>}
+          <h2 style={{ fontSize: '1.5rem', margin: 0 }}>{isOwnProfile ? 'Mi Perfil' : 'Perfil de Usuario'}</h2>
+        </div>
 
         {/* Avatar & Info */}
-        <div className="card text-center" style={{ padding: '24px 16px' }}>
+        <div className="card text-center" style={{ padding: '32px 16px' }}>
           <div style={{ 
-            width: '80px', height: '80px', borderRadius: '50%', 
+            width: '100px', height: '100px', borderRadius: '50%', 
             background: 'linear-gradient(135deg, var(--blue-primary), #8b5cf6)',
             margin: '0 auto 16px', display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: '2rem', fontWeight: 'bold', color: 'white'
+            fontSize: '2.5rem', fontWeight: 'bold', color: 'white',
+            boxShadow: '0 10px 25px rgba(37, 99, 235, 0.3)'
           }}>
-            {profile.usuario?.NombreCompleto?.charAt(0) || 'U'}
+            {usuario?.NombreCompleto?.charAt(0) || 'U'}
           </div>
-          <h3 style={{ fontSize: '1.25rem' }}>{profile.usuario?.NombreCompleto}</h3>
-          <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>{profile.usuario?.Correo}</p>
+          <h3 style={{ fontSize: '1.6rem', fontWeight: 800, marginBottom: '4px' }}>{usuario?.NombreCompleto}</h3>
+          <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '20px' }}>{usuario?.Correo}</p>
           
-          {/* Calificación */}
-          <div style={{ marginTop: '16px', display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'rgba(251, 191, 36, 0.1)', padding: '8px 16px', borderRadius: '20px' }}>
-            <span style={{ fontSize: '1.25rem' }}>⭐</span>
-            <span style={{ fontSize: '1.1rem', fontWeight: 'bold', color: '#fbbf24' }}>{profile.calificacion}</span>
-            <span style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>({profile.totalCalificaciones} reseñas)</span>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'rgba(251, 191, 36, 0.1)', padding: '10px 20px', borderRadius: '25px' }}>
+            <span style={{ fontSize: '1.4rem' }}>⭐</span>
+            <span style={{ fontSize: '1.2rem', fontWeight: 800, color: '#fbbf24' }}>{calificacion}</span>
+            <span style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>({totalCalificaciones} reseñas)</span>
           </div>
 
           {isOwnProfile && (
-            <button onClick={handleLogout} className="btn" style={{ marginTop: '20px', background: 'linear-gradient(135deg, var(--danger-red), var(--danger-dark))' }}>
-              Cerrar Sesión
-            </button>
+            <div style={{ marginTop: '20px', display: 'flex', gap: '10px', justifyContent: 'center' }}>
+              <Link to="/perfil/editar" className="btn btn-outline" style={{ width: 'auto', padding: '10px 20px' }}>
+                Editar Perfil
+              </Link>
+              <button onClick={handleLogout} className="btn" style={{ background: 'transparent', border: '1px solid rgba(239, 68, 68, 0.3)', color: 'var(--danger-text)', width: 'auto', padding: '10px 24px' }}>
+                Salir
+              </button>
+            </div>
           )}
         </div>
 
         {/* Vehículos */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '24px', marginBottom: '12px' }}>
-          <h3 style={{ fontSize: '1.1rem', margin: 0 }}>Vehículos Registrados</h3>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '32px', marginBottom: '16px' }}>
+          <h3 style={{ fontSize: '1.1rem', fontWeight: 700, margin: 0 }}>Vehículos</h3>
           {isOwnProfile && (
-            <Link to="/vehiculos/nuevo" className="btn btn-outline" style={{ width: 'auto', padding: '6px 12px', fontSize: '0.8rem', borderRadius: '10px' }}>
-              + Agregar Vehículo
+            <Link to="/vehiculos/nuevo" style={{ color: 'var(--blue-bright)', fontSize: '0.85rem', fontWeight: 700, textDecoration: 'none' }}>
+              + AGREGAR
             </Link>
           )}
         </div>
 
-        {!profile.vehiculos || profile.vehiculos.length === 0 ? (
-          <div className="card text-center" style={{ padding: '20px' }}>
-            <p style={{ color: 'var(--text-muted)', marginBottom: 0, fontSize: '0.9rem' }}>Aún no tienes vehículos registrados.</p>
-          </div>
-        ) : (
-          profile.vehiculos.map(veh => (
-              <div key={veh.IdVehiculo} className="card" style={{ borderLeft: '4px solid var(--text-muted)' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <div>
-                    <h4 style={{ marginBottom: '4px', fontSize: '1rem' }}>{veh.Modelo}</h4>
-                    <p style={{ fontSize: '0.875rem', color: 'var(--text-muted)' }}>{veh.Color} | Placas: {veh.Placas}</p>
-                  </div>
-                  <div style={{ textAlign: 'right', fontSize: '0.875rem' }}>
-                    <span style={{ color: 'var(--text-muted)' }}>Capacidad:</span> <strong>{veh.Capacidad}</strong>
-                  </div>
-                </div>
-              </div>
-            ))
-        )}
-
-        {/* Reseñas */}
-        <h3 style={{ fontSize: '1.1rem', marginTop: '24px', marginBottom: '12px' }}>Reseñas Recibidas</h3>
-        {!profile.resenas || profile.resenas.length === 0 ? (
-          <div className="card text-center">
-            <p style={{ color: 'var(--text-muted)', marginBottom: 0 }}>Aún no tiene reseñas.</p>
+        {!vehiculos || vehiculos.length === 0 ? (
+          <div className="card text-center" style={{ padding: '24px' }}>
+            <p style={{ color: 'var(--text-muted)', marginBottom: 0, fontSize: '0.9rem' }}>Sin vehículos registrados.</p>
           </div>
         ) : (
           <div style={{ display: 'grid', gap: '12px' }}>
-            {profile.resenas.map(resena => (
-              <div key={resena.IdCalificacion} className="card" style={{ borderLeft: '4px solid #fbbf24' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                    <div style={{ 
-                      width: '36px', height: '36px', borderRadius: '50%', 
-                      background: 'linear-gradient(135deg, #fbbf24, #f59e0b)', 
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      fontSize: '0.875rem', fontWeight: 'bold', color: 'white', flexShrink: 0
-                    }}>
-                      {resena.emisor?.NombreCompleto?.charAt(0) || 'U'}
-                    </div>
-                    <div>
-                      <p style={{ fontWeight: 600, fontSize: '0.95rem', marginBottom: '2px' }}>
-                        {resena.emisor?.NombreCompleto || 'Usuario'}
-                      </p>
-                      <div style={{ display: 'flex', gap: '2px' }}>
-                        {[1,2,3,4,5].map(i => (
-                          <span key={i} style={{ fontSize: '0.85rem' }}>{i <= resena.Estrellas ? '⭐' : '☆'}</span>
-                        ))}
-                      </div>
-                    </div>
+            {vehiculos.map(veh => (
+              <div key={veh.IdVehiculo} className="card" style={{ padding: '16px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div style={{ flex: 1 }}>
+                    <p style={{ fontSize: '0.65rem', color: 'var(--text-muted)', fontWeight: 800, textTransform: 'uppercase', marginBottom: '4px' }}>{veh.Placas}</p>
+                    <h4 style={{ margin: 0, fontSize: '1.1rem' }}>{veh.Modelo}</h4>
+                    <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Color {veh.Color}</p>
                   </div>
-                  <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>
-                    {new Date(resena.FechaCreacion).toLocaleDateString()}
-                  </span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <div style={{ background: 'rgba(255,255,255,0.05)', padding: '8px 12px', borderRadius: '12px', textAlign: 'center' }}>
+                      <p style={{ fontSize: '0.6rem', color: 'var(--text-muted)', fontWeight: 800 }}>CAP.</p>
+                      <p style={{ fontWeight: 800 }}>{veh.Capacidad}</p>
+                    </div>
+                    {isOwnProfile && (
+                      <div style={{ display: 'flex', gap: '8px' }}>
+                        <button 
+                          onClick={() => { if(window.confirm('¿Eliminar vehículo?')) handleDeleteVehiculo(veh.IdVehiculo) }} 
+                          className="btn-outline" 
+                          style={{ padding: '8px 16px', fontSize: '0.75rem', borderRadius: '12px', border: '1px solid rgba(239, 68, 68, 0.3)', color: 'var(--danger-text)', fontWeight: 800, background: 'rgba(239, 68, 68, 0.05)' }}
+                        >
+                          BORRAR
+                        </button>
+                      </div>
+                    )}
+                  </div>
                 </div>
-                {resena.Comentario ? (
-                  <p style={{ fontSize: '0.875rem', margin: 0, paddingLeft: '46px', fontStyle: 'italic' }}>
-                    &quot;{resena.Comentario}&quot;
-                  </p>
-                ) : (
-                  <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', margin: 0, paddingLeft: '46px', fontStyle: 'italic' }}>
-                    Sin comentario
-                  </p>
-                )}
               </div>
             ))}
           </div>
         )}
 
-        {!isOwnProfile && (
-          <div style={{ marginTop: '24px' }}>
-            <button onClick={() => navigate(-1)} className="btn btn-outline" style={{ textDecoration: 'none' }}>
-              &larr; Volver atrás
-            </button>
+        {/* Reseñas */}
+        <h3 style={{ fontSize: '1.1rem', fontWeight: 700, marginTop: '32px', marginBottom: '16px' }}>Reseñas</h3>
+        {!resenas || resenas.length === 0 ? (
+          <div className="card text-center" style={{ padding: '24px' }}>
+            <p style={{ color: 'var(--text-muted)', marginBottom: 0 }}>Aún no tiene reseñas.</p>
+          </div>
+        ) : (
+          <div style={{ display: 'grid', gap: '16px' }}>
+            {resenas.map(resena => (
+              <div key={resena.IdCalificacion} className="card" style={{ padding: '20px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'var(--blue-deep)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' }}>
+                      {resena.emisor?.NombreCompleto?.charAt(0)}
+                    </div>
+                    <div>
+                      <p style={{ fontWeight: 700, fontSize: '0.9rem', marginBottom: '2px' }}>{resena.emisor?.NombreCompleto}</p>
+                      <div style={{ color: '#fbbf24', fontSize: '0.8rem' }}>
+                        {'★'.repeat(resena.Estrellas)}{'☆'.repeat(5 - resena.Estrellas)}
+                      </div>
+                    </div>
+                  </div>
+                  <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>{new Date(resena.FechaCreacion).toLocaleDateString()}</span>
+                </div>
+                <p style={{ fontSize: '0.9rem', fontStyle: 'italic', color: 'var(--text-main)', opacity: 0.9 }}>
+                  &quot;{resena.Comentario || 'Sin comentarios.'}&quot;
+                </p>
+              </div>
+            ))}
           </div>
         )}
       </div>

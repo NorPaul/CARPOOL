@@ -39,14 +39,18 @@ exports.store = async (req, res) => {
       }
     });
 
-    const empalmePasajero = await usuario.getViajesPasajero({
-      where: { 
-        IdEstado: [1, 2],
-        FechaSalida: { [Op.between]: [horaInicio, horaFin] }
-      }
+    const empalmePasajero = await ParticipanteViaje.findOne({
+      include: [{
+        model: Viaje, as: 'viaje',
+        where: {
+          IdEstado: [1, 2],
+          FechaSalida: { [Op.between]: [horaInicio, horaFin] }
+        }
+      }],
+      where: { IdUsuario: userId }
     });
 
-    if (empalmeConductor || (empalmePasajero && empalmePasajero.length > 0)) {
+    if (empalmeConductor || empalmePasajero) {
       return res.status(400).json({ message: 'No puedes unirte a este viaje porque ya tienes otro programado en un margen de ±1 hora.' });
     }
 
@@ -81,13 +85,12 @@ exports.store = async (req, res) => {
       AsientosSolicitados: asientosSolicitados,
       Mensaje: mensajeStr,
       IdEstado: 1, // Pendiente
-      FechaSolicitud: new Date()
     });
 
     res.status(201).json({ message: 'Solicitud enviada al conductor.' });
   } catch (error) {
-    console.error('Error creating solicitud:', error);
-    res.status(500).json({ message: 'Error al crear solicitud' });
+    console.error('Error al crear solicitud:', error);
+    res.status(500).json({ message: 'Error interno: ' + error.message });
   }
 };
 
@@ -95,13 +98,13 @@ exports.index = async (req, res) => {
   try {
     const userId = req.user.id;
     const viajes = await Viaje.findAll({
-      where: { IdConductor: userId, IdEstado: 1 },
+      where: { IdConductor: userId, IdEstado: [1, 2] }, // Publicado y En Curso
       include: [
         {
           model: SolicitudViaje, as: 'solicitudes',
-          where: { IdEstado: 1 },
+          where: { IdEstado: [1, 2] }, // Pendientes Y Aceptadas
           required: false,
-          include: [{ model: User, as: 'usuario', attributes: ['NombreCompleto', 'Correo'] }]
+          include: [{ model: User, as: 'usuario', attributes: ['IdUsuario', 'NombreCompleto', 'Correo'] }]
         },
         {
           model: Ruta, as: 'ruta',
@@ -114,6 +117,7 @@ exports.index = async (req, res) => {
     });
     res.json(viajes);
   } catch (error) {
+    console.error('Error fetching solicitudes:', error);
     res.status(500).json({ message: 'Error al obtener solicitudes' });
   }
 };
@@ -166,7 +170,8 @@ exports.update = async (req, res) => {
       res.json({ message: 'Solicitud rechazada.' });
     }
   } catch (error) {
-    res.status(500).json({ message: 'Error al procesar solicitud' });
+    console.error('Error al procesar solicitud:', error);
+    res.status(500).json({ message: 'Error interno: ' + error.message });
   }
 };
 
@@ -196,7 +201,8 @@ exports.cancelar = async (req, res) => {
     await solicitud.update({ IdEstado: esConductor ? 5 : 4 }); // 5: Expulsado, 4: Cancelada
     res.json({ message: esConductor ? 'Pasajero expulsado.' : 'Pasaje cancelado.' });
   } catch (error) {
-    res.status(500).json({ message: 'Error al cancelar' });
+    console.error('Error al cancelar solicitud:', error);
+    res.status(500).json({ message: 'Error interno: ' + error.message });
   }
 };
 
