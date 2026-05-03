@@ -14,6 +14,7 @@ import SolicitudesPage from './pages/SolicitudesPage';
 import ChatPage        from './pages/ChatPage';
 import ProfilePage     from './pages/ProfilePage';
 import ProfileEdit     from './pages/ProfileEdit';
+import GananciasPage   from './pages/GananciasPage';
 
 import './styles/global.css';
 
@@ -81,6 +82,9 @@ function App() {
 
         {/* Calificaciones */}
         <Route path="/calificar/:viajeId/:usuarioId" element={<ProtectedRoute><CalificacionCreate /></ProtectedRoute>} />
+
+        {/* Ganancias */}
+        <Route path="/ganancias" element={<ProtectedRoute><GananciasPage /></ProtectedRoute>} />
 
         {/* Perfil */}
         <Route path="/perfil" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />

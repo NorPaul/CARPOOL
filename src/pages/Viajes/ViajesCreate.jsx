@@ -1,6 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import DatePicker, { registerLocale } from 'react-datepicker';
+import { es } from 'date-fns/locale';
+import 'react-datepicker/dist/react-datepicker.css';
 import Layout from '../../components/Layout';
+
+registerLocale('es', es);
 
 function ViajesCreate() {
   const [vehiculos, setVehiculos] = useState([]);
@@ -15,6 +20,7 @@ function ViajesCreate() {
     precio: 15,
     notas: ''
   });
+  const [selectedDate, setSelectedDate] = useState(null);
   const [error, setError] = useState(null);
   const navigate = useNavigate();
 
@@ -119,7 +125,29 @@ function ViajesCreate() {
             </div>
             <div className="form-group">
               <label className="form-label">¿Cuándo es tu viaje?</label>
-              <input type="datetime-local" name="fechaHora" className="form-control" required value={formData.fechaHora} onChange={handleChange} />
+              <DatePicker
+                selected={selectedDate}
+                onChange={(date) => {
+                  setSelectedDate(date);
+                  setFormData(prev => ({
+                    ...prev,
+                    fechaHora: date ? date.toISOString() : ''
+                  }));
+                }}
+                showTimeSelect
+                timeFormat="HH:mm"
+                timeIntervals={1}
+                dateFormat="d 'de' MMMM yyyy, HH:mm"
+                locale="es"
+                minDate={new Date()}
+                placeholderText="Selecciona fecha y hora"
+                required
+                className="form-control"
+                calendarClassName="carpool-calendar"
+                wrapperClassName="datepicker-wrapper"
+                popperPlacement="bottom-start"
+                popperProps={{ strategy: 'fixed' }}
+              />
             </div>
             
             <div className="form-group" style={{ marginTop: '16px' }}>

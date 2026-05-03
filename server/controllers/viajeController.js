@@ -4,10 +4,26 @@ const { Op } = require('sequelize');
 exports.getAll = async (req, res) => {
   try {
     const userId = req.user.id;
-    
-    // Viajes donde es conductor
+    const { estado = 'activos', fecha = 'todos' } = req.query;
+
+    // Build estado filter
+    let estadoIds;
+    if (estado === 'activos') estadoIds = [1, 2];
+    else if (estado === 'historial') estadoIds = [3, 4];
+    // 'todos' → no filter
+
+    // Build fecha filter
+    let fechaWhere = {};
+    const now = new Date();
+    if (fecha === 'mes') {
+      fechaWhere = { FechaSalida: { [Op.between]: [new Date(now.getFullYear(), now.getMonth(), 1), new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59)] } };
+    } else if (fecha === 'anio') {
+      fechaWhere = { FechaSalida: { [Op.between]: [new Date(now.getFullYear(), 0, 1), new Date(now.getFullYear(), 11, 31, 23, 59, 59)] } };
+    }
+
+    const conductorWhere = { IdConductor: userId, ...(estadoIds ? { IdEstado: estadoIds } : {}), ...fechaWhere };
     const viajesConductor = await Viaje.findAll({
-      where: { IdConductor: userId },
+      where: conductorWhere,
       include: [
         { model: Ruta, as: 'ruta', include: [
           { model: Ubicacion, as: 'origen' },
@@ -15,14 +31,17 @@ exports.getAll = async (req, res) => {
         ]},
         { model: User, as: 'pasajeros', attributes: ['IdUsuario', 'NombreCompleto'] }
       ],
-      order: [['IdEstado', 'ASC'], ['FechaSalida', 'ASC']]
+      order: [['IdEstado', 'ASC'], ['FechaSalida', 'DESC']]
     });
 
-    // Viajes donde es pasajero
+    // Viajes donde es pasajero — filter via subquery on Viaje
+    const pasajeroWhere = { ...(estadoIds ? { IdEstado: estadoIds } : {}), ...fechaWhere };
     const user = await User.findByPk(userId, {
       include: [{
         model: Viaje, as: 'viajesPasajero',
-        through: { attributes: ['IdSolicitud'] }, // Traer IdSolicitud de la tabla intermedia
+        where: Object.keys(pasajeroWhere).length > 0 ? pasajeroWhere : undefined,
+        required: false,
+        through: { attributes: ['IdSolicitud'] },
         include: [
           { model: User, as: 'conductor', attributes: ['IdUsuario', 'NombreCompleto', 'Telefono'] },
           { model: Ruta, as: 'ruta', include: [
@@ -33,9 +52,23 @@ exports.getAll = async (req, res) => {
       }]
     });
 
+    // Avisos: solicitudes rechazadas (3) o expulsadas (5) del usuario
+    const avisos = await SolicitudViaje.findAll({
+      where: { IdUsuario: userId, IdEstado: [3, 5] },
+      include: [{
+        model: Viaje, as: 'viaje',
+        include: [{ model: Ruta, as: 'ruta', include: [
+          { model: Ubicacion, as: 'origen' },
+          { model: Ubicacion, as: 'destino' },
+        ]}]
+      }],
+      order: [['FechaCreacion', 'DESC']],
+    });
+
     res.json({
       conductor: viajesConductor,
-      pasajero: user.viajesPasajero
+      pasajero: user?.viajesPasajero ?? [],
+      avisos,
     });
   } catch (error) {
     console.error('Error fetching viajes:', error);
@@ -152,6 +185,43 @@ exports.create = async (req, res) => {
   } catch (error) {
     console.error('Error creating viaje:', error);
     res.status(500).json({ message: 'Error al crear viaje' });
+  }
+};
+
+exports.ganancias = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { fecha } = req.query; // formato YYYY-MM
+
+    let whereClause = { IdConductor: userId, IdEstado: 3 };
+
+    if (fecha) {
+      const [anio, mes] = fecha.split('-');
+      const inicio = new Date(anio, mes - 1, 1);
+      const fin = new Date(anio, mes, 0, 23, 59, 59);
+      whereClause.FechaSalida = { [Op.between]: [inicio, fin] };
+    }
+
+    const viajes = await Viaje.findAll({
+      where: whereClause,
+      include: [
+        { model: Ruta, as: 'ruta', include: [
+          { model: Ubicacion, as: 'origen' },
+          { model: Ubicacion, as: 'destino' },
+        ]},
+      ],
+      order: [['FechaSalida', 'DESC']],
+    });
+
+    const total = viajes.reduce((sum, v) => {
+      const pasajeros = v.AsientosTotales - v.AsientosDisponibles;
+      return sum + pasajeros * Number(v.PrecioPorPasajero);
+    }, 0);
+
+    res.json({ total, viajes });
+  } catch (error) {
+    console.error('Error fetching ganancias:', error);
+    res.status(500).json({ message: 'Error al obtener ganancias' });
   }
 };
 

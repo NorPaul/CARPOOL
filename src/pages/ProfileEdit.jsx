@@ -45,15 +45,15 @@ function ProfileEdit() {
       });
 
       if (res.ok) {
+        const data = await res.json();
         setSuccess('¡Perfil actualizado con éxito!');
-        // Actualizar el usuario en el localStorage para que se refleje en toda la app
-        const updatedUser = { ...user, ...fields };
+        const updatedUser = { ...user, ...(data.usuario || fields) };
         localStorage.setItem('carpool_user', JSON.stringify(updatedUser));
         
         setTimeout(() => navigate('/perfil'), 1500);
       } else {
-        const data = await res.json();
-        setError(data.message);
+        const errData = await res.json();
+        setError(errData.message);
       }
     } catch (err) {
       setError('Error al conectar con el servidor.');

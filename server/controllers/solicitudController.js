@@ -54,24 +54,25 @@ exports.store = async (req, res) => {
       return res.status(400).json({ message: 'No puedes unirte a este viaje porque ya tienes otro programado en un margen de ±1 hora.' });
     }
 
-    // Guest processing
+    // Guest processing — filtrar correos vacíos primero
     let correosValidos = [];
-    if (invitados) {
-      const correosArray = invitados.split(',').map(c => c.trim());
+    if (invitados && invitados.trim() !== '') {
+      const correosArray = invitados.split(',').map(c => c.trim()).filter(c => c !== '');
       for (const c of correosArray) {
         if (c === usuario.Correo) {
           return res.status(400).json({ message: 'No te puedes agregar a ti mismo como acompañante.' });
         }
         const userCheck = await User.findOne({ where: { Correo: c } });
         if (!userCheck) {
-          return res.status(400).json({ message: `El acompañante ${c} no ha creado cuenta en la plataforma.` });
+          return res.status(400).json({ message: `El acompañante ${c} no tiene cuenta en la plataforma.` });
         }
         correosValidos.push(c);
       }
     }
 
-    if (asientosSolicitados < correosValidos.length + 1) {
-      return res.status(400).json({ message: `Debes reservar al menos ${correosValidos.length + 1} lugares (incluyéndote a ti).` });
+    // Si hay invitados, los lugares deben cubrir al solicitante + invitados
+    if (correosValidos.length > 0 && asientosSolicitados < correosValidos.length + 1) {
+      return res.status(400).json({ message: `Debes reservar al menos ${correosValidos.length + 1} lugares (tú + ${correosValidos.length} invitado(s)).` });
     }
 
     let mensajeStr = 'Hola, me gustaría unirme a tu viaje.';
@@ -154,6 +155,14 @@ exports.update = async (req, res) => {
               where: { IdViaje: viaje.IdViaje, Correo: correo },
               defaults: { IdViaje: viaje.IdViaje, Correo: correo }
             });
+            // Register guest as confirmed participant so they appear in passenger list
+            const invitadoUser = await User.findOne({ where: { Correo: correo } });
+            if (invitadoUser) {
+              await ParticipanteViaje.findOrCreate({
+                where: { IdViaje: viaje.IdViaje, IdUsuario: invitadoUser.IdUsuario },
+                defaults: { IdViaje: viaje.IdViaje, IdUsuario: invitadoUser.IdUsuario, IdSolicitud: solicitud.IdSolicitud }
+              });
+            }
           }
         }
       }

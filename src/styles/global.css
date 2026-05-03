@@ -1,10 +1,11 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap');
+@import "tailwindcss";
+
 /* ============================================
    CARPOOL TecNM Colima — Sistema de Diseño Global
    Paleta: Deep Navy → Vivid Azure ("Oceanic Professional")
    Fuente: Outfit (Google Fonts)
    ============================================ */
-
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap');
 
 /* ─── Variables ─────────────────────────────── */
 :root {
@@ -75,6 +76,7 @@ body {
   background: var(--surface-color);
   position: relative;
   box-shadow: 0 0 100px rgba(0, 0, 0, 0.8);
+  overflow: visible;
 }
 
 .app-container.auth-mode {
@@ -87,6 +89,7 @@ body {
   padding: 24px;
   padding-bottom: 90px;
   overflow-y: auto;
+  overflow-x: visible;
 }
 
 /* ─── Tipografía Gradiente ───────────────────── */
@@ -533,6 +536,116 @@ body {
   border-top: 1px solid var(--border);
   color: var(--text-muted);
   font-size: 0.8rem;
+}
+
+/* ─── DatePicker Personalizado ───────────────── */
+.datepicker-wrapper {
+  width: 100%;
+}
+
+.datepicker-wrapper .form-control {
+  cursor: pointer;
+}
+
+.carpool-calendar {
+  background: #0f172a !important;
+  border: 1px solid rgba(37, 99, 235, 0.3) !important;
+  border-radius: 16px !important;
+  font-family: 'Outfit', sans-serif !important;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.6) !important;
+  overflow: hidden;
+}
+
+.carpool-calendar .react-datepicker__header {
+  background: #1e3a8a !important;
+  border-bottom: 1px solid rgba(37, 99, 235, 0.3) !important;
+  padding: 12px 0 8px !important;
+}
+
+.carpool-calendar .react-datepicker__current-month,
+.carpool-calendar .react-datepicker__day-name,
+.carpool-calendar .react-datepicker-time__header {
+  color: #f8fafc !important;
+  font-family: 'Outfit', sans-serif !important;
+  font-weight: 700 !important;
+}
+
+.carpool-calendar .react-datepicker__day-name {
+  color: rgba(248,250,252,0.5) !important;
+  font-size: 0.75rem !important;
+}
+
+.carpool-calendar .react-datepicker__day {
+  color: #e2e8f0 !important;
+  border-radius: 8px !important;
+  font-family: 'Outfit', sans-serif !important;
+  transition: all 0.2s !important;
+}
+
+.carpool-calendar .react-datepicker__day:hover {
+  background: rgba(37, 99, 235, 0.3) !important;
+  color: #fff !important;
+}
+
+.carpool-calendar .react-datepicker__day--selected,
+.carpool-calendar .react-datepicker__day--keyboard-selected {
+  background: #2563eb !important;
+  color: #fff !important;
+  font-weight: 700 !important;
+}
+
+.carpool-calendar .react-datepicker__day--today {
+  border: 1px solid rgba(56, 189, 248, 0.5) !important;
+  color: #38bdf8 !important;
+  font-weight: 700 !important;
+}
+
+.carpool-calendar .react-datepicker__day--disabled {
+  color: #334155 !important;
+}
+
+.carpool-calendar .react-datepicker__navigation-icon::before {
+  border-color: #94a3b8 !important;
+}
+
+.carpool-calendar .react-datepicker__time-container {
+  border-left: 1px solid rgba(37, 99, 235, 0.2) !important;
+}
+
+.carpool-calendar .react-datepicker__time-container .react-datepicker__time {
+  background: #0f172a !important;
+}
+
+.carpool-calendar .react-datepicker__time-container .react-datepicker__time-list-item {
+  color: #e2e8f0 !important;
+  font-family: 'Outfit', sans-serif !important;
+  transition: all 0.2s !important;
+}
+
+.carpool-calendar .react-datepicker__time-container .react-datepicker__time-list-item:hover {
+  background: rgba(37, 99, 235, 0.3) !important;
+  color: #fff !important;
+}
+
+.carpool-calendar .react-datepicker__time-container .react-datepicker__time-list-item--selected {
+  background: #2563eb !important;
+  color: #fff !important;
+  font-weight: 700 !important;
+}
+
+.carpool-calendar .react-datepicker__triangle {
+  display: none !important;
+}
+
+/* Portal overlay (withPortal) */
+.react-datepicker__portal {
+  background: rgba(2, 6, 23, 0.85) !important;
+  backdrop-filter: blur(8px) !important;
+}
+
+.react-datepicker__portal .carpool-calendar {
+  border-radius: 20px !important;
+  transform: scale(1.05);
 }
 
 /* ─── Utilidades ─────────────────────────────── */

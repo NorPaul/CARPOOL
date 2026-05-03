@@ -26,6 +26,9 @@ exports.create = async (req, res) => {
     res.status(201).json(nuevoVehiculo);
   } catch (error) {
     console.error('Error creating vehiculo:', error);
+    if (error.original?.code === 'ER_DUP_ENTRY') {
+      return res.status(400).json({ message: 'Esas placas ya están registradas. Usa unas placas diferentes.' });
+    }
     res.status(500).json({ message: 'Error al crear vehículo' });
   }
 };

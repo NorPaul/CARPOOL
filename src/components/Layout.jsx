@@ -12,7 +12,7 @@ import BottomNav from './BottomNav';
 function Layout({ children }) {
   return (
     <div className="app-container">
-      <main className="main-content">
+      <main className="main-content" style={{ overflowY: 'visible' }}>
         {children}
       </main>
       <BottomNav />
