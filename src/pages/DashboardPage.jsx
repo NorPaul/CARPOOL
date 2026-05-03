@@ -83,7 +83,7 @@ function DashboardPage() {
           </div>
 
           <div className="card" style={{ padding: '20px', display: 'flex', flexDirection: 'column', justifyContent: 'center', borderLeft: '4px solid #10b981' }}>
-            <p style={{ color: 'var(--text-muted)', fontSize: '0.65rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '4px' }}>Ganancias</p>
+            <p style={{ color: 'var(--text-muted)', fontSize: '0.65rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '4px' }}>Ingresos</p>
             <div style={{ fontSize: '1.8rem', fontWeight: 800, color: '#10b981' }}>
               ${data.stats.ganancias.toLocaleString()}
             </div>
@@ -97,7 +97,7 @@ function DashboardPage() {
               <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>
             </div>
             <h3>{data.stats.viajesConductor}</h3>
-            <p>Conductores</p>
+            <p>Viajes Activos</p>
           </div>
 
           <div className="stat-card">
@@ -105,7 +105,7 @@ function DashboardPage() {
               <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
             </div>
             <h3>{data.stats.viajesPasajero}</h3>
-            <p>Pasajeros</p>
+            <p>Reservas Activas</p>
           </div>
         </div>
 
@@ -182,7 +182,7 @@ function DashboardPage() {
               <div className="btn-icon" style={{ background: 'rgba(16, 185, 129, 0.1)', color: '#10b981' }}>
                 <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
               </div>
-              <span>Ver Ganancias</span>
+              <span>Ver Ingresos</span>
             </Link>
           </div>
         </div>

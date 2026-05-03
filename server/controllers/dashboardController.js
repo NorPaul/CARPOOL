@@ -4,11 +4,11 @@ exports.getDashboardData = async (req, res) => {
   try {
     const userId = req.user.id;
 
-    const totalViajesConductor = await Viaje.count({ where: { IdConductor: userId } });
-    
-    // Viajes como pasajero
+    const totalViajesConductor = await Viaje.count({ where: { IdConductor: userId, IdEstado: [1, 2] } });
+
+    // Viajes activos como pasajero
     const user = await User.findByPk(userId, {
-      include: [{ model: Viaje, as: 'viajesPasajero' }]
+      include: [{ model: Viaje, as: 'viajesPasajero', where: { IdEstado: [1, 2] }, required: false }]
     });
     const totalViajesPasajero = user ? user.viajesPasajero.length : 0;
 

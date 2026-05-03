@@ -30,7 +30,8 @@ function Pagination({ total, page, onPage }) {
 }
 
 function ViajesList() {
-  const [data, setData] = useState({ conductor: [], pasajero: [], avisos: [] });
+  const currentUser = JSON.parse(localStorage.getItem('carpool_user') || '{}');
+  const [data, setData] = useState({ conductor: [], pasajero: [], avisos: [], ultimosMensajes: {} });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState('conductor');
@@ -112,6 +113,11 @@ function ViajesList() {
     } catch (err) { console.error(err); }
   };
 
+  const tieneNoLeidos = (viajeId) => {
+    const m = data.ultimosMensajes?.[viajeId];
+    return m && m.IdRemitente !== currentUser?.IdUsuario;
+  };
+
   const statusColor = (s) => ({ 1: '#3b82f6', 2: '#f59e0b', 3: '#10b981' }[s] ?? '#ef4444');
   const statusBadge = (s) => ({ 1: 'badge-active', 2: 'badge-progress', 3: 'badge-completed' }[s] ?? 'badge-danger');
   const statusText = (s) => ({ 1: 'Publicado', 2: 'En Curso', 3: 'Finalizado', 4: 'Cancelado', 5: 'Expulsado' }[s] ?? 'Cancelado');
@@ -130,8 +136,8 @@ function ViajesList() {
           style={{ appearance: 'auto', backgroundColor: 'var(--surface-color)', fontSize: '0.85rem', padding: '10px 12px' }}
         >
           <option value="activos">Activos</option>
-          <option value="historial">Historial</option>
-          <option value="todos">Todos</option>
+          <option value="finalizados">Finalizados</option>
+          <option value="cancelados">Cancelados</option>
         </select>
       </div>
       <div style={{ flex: 1, minWidth: '140px' }}>
@@ -256,8 +262,10 @@ function ViajesList() {
                         </div>
 
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
-                          <Link to={`/viajes/${viaje.IdViaje}/chat`} className="btn" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.1)', color: 'white', padding: '12px', fontSize: '0.85rem', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '6px' }}>
-                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> Chat
+                          <Link to={`/viajes/${viaje.IdViaje}/chat`} className="btn" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.1)', color: 'white', padding: '12px', fontSize: '0.85rem', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '6px', position: 'relative' }}>
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                            Chat
+                            {tieneNoLeidos(viaje.IdViaje) && <span style={{ width: '8px', height: '8px', background: '#3b82f6', borderRadius: '50%', position: 'absolute', top: '8px', right: '8px' }} />}
                           </Link>
                           <Link to="/solicitudes" className="btn" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.1)', color: 'white', padding: '12px', fontSize: '0.85rem', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '6px' }}>
                             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg> Solicitudes
@@ -282,6 +290,13 @@ function ViajesList() {
                               className="btn btn-outline"
                               style={{ width: '100%', marginTop: '10px', color: 'var(--danger-red)', borderColor: 'rgba(239,68,68,0.3)', background: 'rgba(239,68,68,0.05)', fontSize: '0.85rem' }}
                             >🚫 CANCELAR VIAJE</button>
+                          </div>
+                        )}
+
+                        {viaje.IdEstado === 3 && viaje.ObservacionesFinales && (
+                          <div style={{ marginTop: '14px', padding: '12px', background: 'rgba(16,185,129,0.06)', border: '1px solid rgba(16,185,129,0.15)', borderRadius: '10px' }}>
+                            <p style={{ fontSize: '0.6rem', color: '#10b981', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '4px' }}>Observaciones finales</p>
+                            <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>{viaje.ObservacionesFinales}</p>
                           </div>
                         )}
 
@@ -346,8 +361,10 @@ function ViajesList() {
                         </p>
 
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
-                          <Link to={`/viajes/${viaje.IdViaje}/chat`} className="btn" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.1)', color: 'white', padding: '12px', fontSize: '0.85rem', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '6px' }}>
-                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> Chat
+                          <Link to={`/viajes/${viaje.IdViaje}/chat`} className="btn" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.1)', color: 'white', padding: '12px', fontSize: '0.85rem', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '6px', position: 'relative' }}>
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                            Chat
+                            {tieneNoLeidos(viaje.IdViaje) && <span style={{ width: '8px', height: '8px', background: '#3b82f6', borderRadius: '50%', position: 'absolute', top: '8px', right: '8px' }} />}
                           </Link>
                           {viaje.IdEstado === 3 ? (
                             <Link to={`/calificar/${viaje.IdViaje}/${viaje.conductor?.IdUsuario}`} className="btn" style={{ padding: '12px', fontSize: '0.85rem' }}>⭐ CALIFICAR</Link>

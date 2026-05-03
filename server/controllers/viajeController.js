@@ -1,16 +1,17 @@
-const { Viaje, User, Ruta, Ubicacion, ParticipanteViaje, SolicitudViaje } = require('../models');
+const { Viaje, User, Ruta, Ubicacion, ParticipanteViaje, SolicitudViaje, Mensaje } = require('../models');
 const { Op } = require('sequelize');
 
 exports.getAll = async (req, res) => {
   try {
     const userId = req.user.id;
-    const { estado = 'activos', fecha = 'todos' } = req.query;
+    const { estado = 'todos', fecha = 'todos' } = req.query;
 
     // Build estado filter
     let estadoIds;
-    if (estado === 'activos') estadoIds = [1, 2];
-    else if (estado === 'historial') estadoIds = [3, 4];
-    // 'todos' → no filter
+    if (estado === 'activos') estadoIds = { [Op.in]: [1, 2] };
+    else if (estado === 'finalizados') estadoIds = { [Op.in]: [3] };
+    else if (estado === 'cancelados') estadoIds = { [Op.in]: [4] };
+    // sin filtro si no coincide
 
     // Build fecha filter
     let fechaWhere = {};
@@ -21,7 +22,7 @@ exports.getAll = async (req, res) => {
       fechaWhere = { FechaSalida: { [Op.between]: [new Date(now.getFullYear(), 0, 1), new Date(now.getFullYear(), 11, 31, 23, 59, 59)] } };
     }
 
-    const conductorWhere = { IdConductor: userId, ...(estadoIds ? { IdEstado: estadoIds } : {}), ...fechaWhere };
+    const conductorWhere = { IdConductor: userId, ...(estadoIds !== undefined ? { IdEstado: estadoIds } : {}), ...fechaWhere };
     const viajesConductor = await Viaje.findAll({
       where: conductorWhere,
       include: [
@@ -29,28 +30,59 @@ exports.getAll = async (req, res) => {
           { model: Ubicacion, as: 'origen' },
           { model: Ubicacion, as: 'destino' },
         ]},
-        { model: User, as: 'pasajeros', attributes: ['IdUsuario', 'NombreCompleto'] }
+        { model: User, as: 'pasajeros', attributes: ['IdUsuario', 'NombreCompleto'] },
       ],
       order: [['IdEstado', 'ASC'], ['FechaSalida', 'DESC']]
     });
 
-    // Viajes donde es pasajero — filter via subquery on Viaje
-    const pasajeroWhere = { ...(estadoIds ? { IdEstado: estadoIds } : {}), ...fechaWhere };
-    const user = await User.findByPk(userId, {
-      include: [{
-        model: Viaje, as: 'viajesPasajero',
-        where: Object.keys(pasajeroWhere).length > 0 ? pasajeroWhere : undefined,
-        required: false,
-        through: { attributes: ['IdSolicitud'] },
+    // Viajes donde es pasajero — query directa via ParticipanteViaje para evitar bugs de belongsToMany + where
+    const pasajeroWhere = { ...(estadoIds !== undefined ? { IdEstado: estadoIds } : {}), ...fechaWhere };
+    const participaciones = await ParticipanteViaje.findAll({
+      where: { IdUsuario: userId },
+      attributes: ['IdViaje', 'IdSolicitud'],
+    });
+    const viajeIdsPasajero = participaciones.map(p => p.IdViaje);
+    const solicitudByViaje = {};
+    participaciones.forEach(p => { solicitudByViaje[p.IdViaje] = p.IdSolicitud; });
+
+    let viajesPasajero = [];
+    if (viajeIdsPasajero.length > 0) {
+      const viajeWhere = { IdViaje: viajeIdsPasajero, ...pasajeroWhere };
+      const viajes = await Viaje.findAll({
+        where: viajeWhere,
         include: [
           { model: User, as: 'conductor', attributes: ['IdUsuario', 'NombreCompleto', 'Telefono'] },
           { model: Ruta, as: 'ruta', include: [
             { model: Ubicacion, as: 'origen' },
             { model: Ubicacion, as: 'destino' },
           ]}
-        ]
-      }]
-    });
+        ],
+        order: [['IdEstado', 'ASC'], ['FechaSalida', 'DESC']],
+      });
+      // Attach IdSolicitud to each viaje for cancel button
+      viajesPasajero = viajes.map(v => ({
+        ...v.toJSON(),
+        ParticipanteViaje: { IdSolicitud: solicitudByViaje[v.IdViaje] ?? null },
+      }));
+    }
+
+    // Último mensaje por viaje para indicador de no leídos
+    const todosLosViajeIds = [
+      ...viajesConductor.map(v => v.IdViaje),
+      ...viajesPasajero.map(v => v.IdViaje),
+    ];
+    const ultimosMensajes = {};
+    if (todosLosViajeIds.length > 0) {
+      const msgs = await Mensaje.findAll({
+        attributes: ['IdViaje', 'IdRemitente', 'FechaEnvio'],
+        where: { IdViaje: todosLosViajeIds },
+        order: [['FechaEnvio', 'DESC']],
+      });
+      // Keep only the latest per viaje
+      for (const m of msgs) {
+        if (!ultimosMensajes[m.IdViaje]) ultimosMensajes[m.IdViaje] = m;
+      }
+    }
 
     // Avisos: solicitudes rechazadas (3) o expulsadas (5) del usuario
     const avisos = await SolicitudViaje.findAll({
@@ -67,8 +99,9 @@ exports.getAll = async (req, res) => {
 
     res.json({
       conductor: viajesConductor,
-      pasajero: user?.viajesPasajero ?? [],
+      pasajero: viajesPasajero,
       avisos,
+      ultimosMensajes,
     });
   } catch (error) {
     console.error('Error fetching viajes:', error);

@@ -65,7 +65,7 @@ function GananciasPage() {
           <Link to="/dashboard" style={{ color: 'var(--text-muted)', textDecoration: 'none', padding: '8px' }}>
             &larr; Volver
           </Link>
-          <h2 style={{ fontSize: '1.5rem', margin: 0 }}>Reporte de Ganancias</h2>
+          <h2 style={{ fontSize: '1.5rem', margin: 0 }}>Reporte de Ingresos</h2>
         </div>
 
         {/* Total Banner */}
@@ -133,7 +133,7 @@ function GananciasPage() {
         ) : !data.viajes || data.viajes.length === 0 ? (
           <div className="card text-center">
             <p style={{ color: 'var(--text-muted)', marginBottom: 0 }}>
-              No hay registros de ganancias{filtroFecha ? ' para este período' : ''}.
+              No hay registros de ingresos{filtroFecha ? ' para este período' : ''}.
             </p>
           </div>
         ) : (
