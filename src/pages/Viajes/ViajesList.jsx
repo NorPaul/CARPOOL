@@ -125,34 +125,42 @@ function ViajesList() {
   const conductorPage = paginate(data.conductor, pageConductor);
   const pasajeroPage = paginate(data.pasajero, pagePasajero);
 
+  const [pendingFilters, setPendingFilters] = useState({ estado: 'activos', fecha: 'todos' });
+
   const FilterBar = () => (
-    <div style={{ display: 'flex', gap: '10px', marginBottom: '24px', flexWrap: 'wrap' }}>
-      <div style={{ flex: 1, minWidth: '140px' }}>
-        <label style={{ fontSize: '0.65rem', color: 'var(--text-muted)', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', marginBottom: '6px' }}>Estado</label>
-        <select
-          className="form-control"
-          value={filters.estado}
-          onChange={e => handleFilter('estado', e.target.value)}
-          style={{ appearance: 'auto', backgroundColor: 'var(--surface-color)', fontSize: '0.85rem', padding: '10px 12px' }}
-        >
-          <option value="activos">Activos</option>
-          <option value="finalizados">Finalizados</option>
-          <option value="cancelados">Cancelados</option>
-        </select>
-      </div>
-      <div style={{ flex: 1, minWidth: '140px' }}>
-        <label style={{ fontSize: '0.65rem', color: 'var(--text-muted)', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', marginBottom: '6px' }}>Período</label>
-        <select
-          className="form-control"
-          value={filters.fecha}
-          onChange={e => handleFilter('fecha', e.target.value)}
-          style={{ appearance: 'auto', backgroundColor: 'var(--surface-color)', fontSize: '0.85rem', padding: '10px 12px' }}
-        >
-          <option value="todos">Todos</option>
-          <option value="mes">Este mes</option>
-          <option value="anio">Este año</option>
-        </select>
-      </div>
+    <div className="card" style={{ padding: '16px 20px', marginBottom: '24px' }}>
+      <form onSubmit={e => { e.preventDefault(); handleFilter('estado', pendingFilters.estado); setFilters(pendingFilters); fetchViajes(pendingFilters); }}
+        style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', alignItems: 'flex-end' }}>
+        <div>
+          <label style={{ fontSize: '0.65rem', color: 'var(--text-muted)', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', marginBottom: '6px' }}>Estado</label>
+          <select
+            className="form-control"
+            value={pendingFilters.estado}
+            onChange={e => setPendingFilters(p => ({ ...p, estado: e.target.value }))}
+            style={{ appearance: 'auto', backgroundColor: 'var(--surface-color)', fontSize: '0.85rem', padding: '8px 12px', width: '140px' }}
+          >
+            <option value="activos">Activos</option>
+            <option value="finalizados">Finalizados</option>
+            <option value="cancelados">Cancelados</option>
+          </select>
+        </div>
+        <div>
+          <label style={{ fontSize: '0.65rem', color: 'var(--text-muted)', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', marginBottom: '6px' }}>Período</label>
+          <select
+            className="form-control"
+            value={pendingFilters.fecha}
+            onChange={e => setPendingFilters(p => ({ ...p, fecha: e.target.value }))}
+            style={{ appearance: 'auto', backgroundColor: 'var(--surface-color)', fontSize: '0.85rem', padding: '8px 12px', width: '140px' }}
+          >
+            <option value="todos">Desde siempre</option>
+            <option value="mes">Este Mes</option>
+            <option value="anio">Este Año</option>
+          </select>
+        </div>
+        <button type="submit" className="btn btn-outline" style={{ padding: '8px 20px', fontSize: '0.85rem', width: 'auto', height: '38px' }}>
+          Filtrar
+        </button>
+      </form>
     </div>
   );
 
@@ -162,9 +170,14 @@ function ViajesList() {
         {error && <div className="alert alert-error">{error}</div>}
 
         <header style={{ marginBottom: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <div>
-            <h1 className="text-gradient" style={{ fontSize: '2.2rem', fontWeight: 800, letterSpacing: '-0.02em', marginBottom: '4px' }}>Mis Viajes</h1>
-            <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>Gestiona tus trayectos activos y pasados</p>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+            <div style={{ width: '50px', height: '50px', background: 'linear-gradient(135deg,#2563eb,#1d4ed8)', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              <svg width="24" height="24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><path d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/></svg>
+            </div>
+            <div>
+              <h1 className="text-gradient" style={{ fontSize: '2.2rem', fontWeight: 800, letterSpacing: '-0.02em', marginBottom: '4px' }}>Mis Viajes</h1>
+              <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>Gestiona tus trayectos activos y pasados</p>
+            </div>
           </div>
           <Link to="/viajes/nuevo" className="btn" style={{ width: 'auto', padding: '10px 16px', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.9rem', fontWeight: 700 }}>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>

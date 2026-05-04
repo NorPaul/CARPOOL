@@ -1,11 +1,6 @@
 import { useState, useEffect } from 'react';
 import Layout from '../../components/Layout';
 
-const MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
-const anioActual = new Date().getFullYear();
-const ANIOS = [anioActual, anioActual + 1];
-const DIAS = Array.from({ length: 31 }, (_, i) => i + 1);
-
 function ViajesSearch() {
   const [viajes, setViajes] = useState([]);
   const [ubicaciones, setUbicaciones] = useState([]);
@@ -16,9 +11,7 @@ function ViajesSearch() {
   const [filters, setFilters] = useState({
     IdOrigen: '',
     IdDestino: '',
-    dia: '',
-    mes: '',
-    anio: String(anioActual),
+    fecha: '',
   });
 
   const [requestData, setRequestData] = useState({
@@ -51,11 +44,7 @@ function ViajesSearch() {
       const params = new URLSearchParams();
       if (filters.IdOrigen) params.set('IdOrigen', filters.IdOrigen);
       if (filters.IdDestino) params.set('IdDestino', filters.IdDestino);
-      if (filters.dia && filters.mes) {
-        const mes = String(MESES.indexOf(filters.mes) + 1).padStart(2, '0');
-        const dia = String(filters.dia).padStart(2, '0');
-        params.set('fecha', `${filters.anio}-${mes}-${dia}`);
-      }
+      if (filters.fecha) params.set('fecha', filters.fecha);
       const res = await fetch(`/api/viajes/search?${params.toString()}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -121,9 +110,16 @@ function ViajesSearch() {
   return (
     <Layout>
       <div className="animate-up">
-        <div style={{ marginBottom: '32px' }}>
-          <h1 className="text-gradient" style={{ fontSize: '2.2rem', fontWeight: 800, letterSpacing: '-0.02em' }}>Buscar Aventón</h1>
-          <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>Encuentra compañeros para tu próximo viaje</p>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '32px' }}>
+          <div style={{ width: '50px', height: '50px', background: 'linear-gradient(135deg, var(--blue-primary), var(--blue-bright))', borderRadius: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, boxShadow: '0 4px 15px rgba(37,99,235,0.35)' }}>
+            <svg width="26" height="26" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+              <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+            </svg>
+          </div>
+          <div>
+            <h1 className="text-gradient" style={{ fontSize: '1.8rem', fontWeight: 800, letterSpacing: '-0.02em', margin: 0 }}>Buscar Aventón</h1>
+            <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', margin: 0 }}>Encuentra compañeros para tu próximo viaje</p>
+          </div>
         </div>
 
         {/* Filtros */}
@@ -154,34 +150,12 @@ function ViajesSearch() {
           </div>
           <div className="form-group mb-6">
             <label className="form-label">Fecha (Opcional)</label>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr 1fr', gap: '8px' }}>
-              <select
-                className="form-control"
-                value={filters.dia}
-                onChange={e => setFilters(p => ({ ...p, dia: e.target.value }))}
-                style={{ appearance: 'auto', backgroundColor: 'var(--surface-color)' }}
-              >
-                <option value="">Día</option>
-                {DIAS.map(d => <option key={d} value={d}>{d}</option>)}
-              </select>
-              <select
-                className="form-control"
-                value={filters.mes}
-                onChange={e => setFilters(p => ({ ...p, mes: e.target.value }))}
-                style={{ appearance: 'auto', backgroundColor: 'var(--surface-color)' }}
-              >
-                <option value="">Mes</option>
-                {MESES.map(m => <option key={m} value={m}>{m}</option>)}
-              </select>
-              <select
-                className="form-control"
-                value={filters.anio}
-                onChange={e => setFilters(p => ({ ...p, anio: e.target.value }))}
-                style={{ appearance: 'auto', backgroundColor: 'var(--surface-color)' }}
-              >
-                {ANIOS.map(a => <option key={a} value={a}>{a}</option>)}
-              </select>
-            </div>
+            <input
+              type="date"
+              className="form-control"
+              value={filters.fecha}
+              onChange={e => setFilters(p => ({ ...p, fecha: e.target.value }))}
+            />
           </div>
           <button type="submit" className="btn">Aplicar Filtros</button>
         </form>
