@@ -139,6 +139,7 @@ function ViajesList() {
             onChange={e => setPendingFilters(p => ({ ...p, estado: e.target.value }))}
             style={{ appearance: 'auto', backgroundColor: 'var(--surface-color)', fontSize: '0.85rem', padding: '8px 12px', width: '140px' }}
           >
+            <option value="todos">Todos</option>
             <option value="activos">Activos</option>
             <option value="finalizados">Finalizados</option>
             <option value="cancelados">Cancelados</option>

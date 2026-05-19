@@ -1,5 +1,10 @@
 import { useState, useEffect } from 'react';
+import DatePicker, { registerLocale } from 'react-datepicker';
+import { es } from 'date-fns/locale';
+import 'react-datepicker/dist/react-datepicker.css';
 import Layout from '../../components/Layout';
+
+registerLocale('es', es);
 
 function ViajesSearch() {
   const [viajes, setViajes] = useState([]);
@@ -11,7 +16,7 @@ function ViajesSearch() {
   const [filters, setFilters] = useState({
     IdOrigen: '',
     IdDestino: '',
-    fecha: '',
+    fecha: null,
   });
 
   const [requestData, setRequestData] = useState({
@@ -44,7 +49,11 @@ function ViajesSearch() {
       const params = new URLSearchParams();
       if (filters.IdOrigen) params.set('IdOrigen', filters.IdOrigen);
       if (filters.IdDestino) params.set('IdDestino', filters.IdDestino);
-      if (filters.fecha) params.set('fecha', filters.fecha);
+      if (filters.fecha) {
+        const d = filters.fecha;
+        const fechaStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+        params.set('fecha', fechaStr);
+      }
       const res = await fetch(`/api/viajes/search?${params.toString()}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -150,11 +159,19 @@ function ViajesSearch() {
           </div>
           <div className="form-group mb-6">
             <label className="form-label">Fecha (Opcional)</label>
-            <input
-              type="date"
+            <DatePicker
+              selected={filters.fecha}
+              onChange={date => setFilters(p => ({ ...p, fecha: date }))}
+              dateFormat="d 'de' MMMM yyyy"
+              locale="es"
+              minDate={new Date()}
+              placeholderText="Selecciona una fecha"
+              isClearable
+              portalId="root"
               className="form-control"
-              value={filters.fecha}
-              onChange={e => setFilters(p => ({ ...p, fecha: e.target.value }))}
+              calendarClassName="carpool-calendar"
+              wrapperClassName="datepicker-wrapper"
+              popperPlacement="bottom-start"
             />
           </div>
           <button type="submit" className="btn">Aplicar Filtros</button>

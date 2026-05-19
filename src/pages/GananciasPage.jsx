@@ -20,14 +20,23 @@ const MESES = [
 ];
 
 const anioActual = new Date().getFullYear();
-const ANIOS = [anioActual, anioActual - 1, anioActual - 2];
+const ANIOS = [
+  { value: '', label: 'Todos los años' },
+  { value: String(anioActual), label: String(anioActual) },
+  { value: String(anioActual - 1), label: String(anioActual - 1) },
+  { value: String(anioActual - 2), label: String(anioActual - 2) },
+];
 
 function GananciasPage() {
   const [data, setData] = useState({ total: 0, viajes: [] });
   const [loading, setLoading] = useState(true);
   const [filtroMes, setFiltroMes] = useState('');
   const [filtroAnio, setFiltroAnio] = useState(String(anioActual));
-  const filtroFecha = filtroMes ? `${filtroAnio}-${filtroMes}` : '';
+
+  // Construir parámetro de fecha: YYYY-MM, YYYY, o vacío
+  const filtroFecha = filtroMes && filtroAnio
+    ? `${filtroAnio}-${filtroMes}`
+    : filtroAnio || '';
 
   useEffect(() => {
     fetchGanancias();
@@ -117,7 +126,7 @@ function GananciasPage() {
               style={{ appearance: 'auto', backgroundColor: 'var(--surface-color)' }}
             >
               {ANIOS.map(a => (
-                <option key={a} value={a}>{a}</option>
+                <option key={a.value} value={a.value}>{a.label}</option>
               ))}
             </select>
             <button type="submit" className="btn" style={{ padding: '14px 16px', width: 'auto' }}>
@@ -139,7 +148,7 @@ function GananciasPage() {
         ) : (
           <div style={{ display: 'grid', gap: '16px' }}>
             {data.viajes.map((viaje) => {
-              const pasajerosConfirmados = viaje.AsientosTotales - viaje.AsientosDisponibles;
+              const pasajerosConfirmados = viaje.pasajeros?.length ?? 0;
               const ganancia = pasajerosConfirmados * Number(viaje.PrecioPorPasajero);
 
               return (
@@ -185,7 +194,7 @@ function GananciasPage() {
                       color: 'var(--text-muted)',
                     }}
                   >
-                    <span>👥 {pasajerosConfirmados} pasajero(s)</span>
+                    <span>👥 {pasajerosConfirmados} pasajero(s) confirmado(s)</span>
                     <span>💵 ${Number(viaje.PrecioPorPasajero).toFixed(2)} c/u</span>
                     <Link
                       to={`/viajes/${viaje.IdViaje}/chat`}

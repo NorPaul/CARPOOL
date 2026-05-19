@@ -83,10 +83,10 @@ function useAuth() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          name: userData.NombreCompleto,
-          email: userData.Correo,
-          phone: userData.Telefono,
-          password: userData.Contrasena
+          NombreCompleto: userData.NombreCompleto,
+          Correo: userData.Correo,
+          Telefono: userData.Telefono,
+          Contrasena: userData.Contrasena
         })
       });
 

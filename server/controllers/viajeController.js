@@ -121,30 +121,40 @@ exports.search = async (req, res) => {
       FechaSalida: { [Op.gt]: new Date() }, // Solo futuros
     };
 
+    // Si se filtra por fecha, combinar: en esa fecha Y en el futuro
     if (fecha) {
       const startOfDay = new Date(fecha);
       startOfDay.setHours(0, 0, 0, 0);
       const endOfDay = new Date(fecha);
       endOfDay.setHours(23, 59, 59, 999);
-      whereClause.FechaSalida = { [Op.between]: [startOfDay, endOfDay] };
+      const now = new Date();
+      
+      // Tomar el máximo entre inicio del día y ahora, mínimo entre fin del día y futuro lejano
+      const effectiveStart = startOfDay > now ? startOfDay : now;
+      whereClause.FechaSalida = { [Op.between]: [effectiveStart, endOfDay] };
     }
 
-    let rutaWhere = {};
-    if (IdOrigen) rutaWhere.IdOrigen = IdOrigen;
-    if (IdDestino) rutaWhere.IdDestino = IdDestino;
+    // Construir filtro de ruta solo si hay filtros
+    const rutaInclude = {
+      model: Ruta, as: 'ruta',
+      include: [
+        { model: Ubicacion, as: 'origen' },
+        { model: Ubicacion, as: 'destino' },
+      ]
+    };
+    
+    // Agregar where a ruta solo si hay filtros
+    if (IdOrigen || IdDestino) {
+      rutaInclude.where = {};
+      if (IdOrigen) rutaInclude.where.IdOrigen = IdOrigen;
+      if (IdDestino) rutaInclude.where.IdDestino = IdDestino;
+    }
 
     const viajes = await Viaje.findAll({
       where: whereClause,
       include: [
         { model: User, as: 'conductor', attributes: ['NombreCompleto', 'Correo', 'Telefono'] },
-        {
-          model: Ruta, as: 'ruta',
-          where: Object.keys(rutaWhere).length > 0 ? rutaWhere : undefined,
-          include: [
-            { model: Ubicacion, as: 'origen' },
-            { model: Ubicacion, as: 'destino' },
-          ]
-        },
+        rutaInclude,
       ],
       order: [['FechaSalida', 'ASC']]
     });
@@ -229,15 +239,19 @@ exports.ganancias = async (req, res) => {
     let whereClause = { IdConductor: userId, IdEstado: 3 };
 
     if (fecha) {
-      const [anio, mes] = fecha.split('-');
-      const inicio = new Date(anio, mes - 1, 1);
-      const fin = new Date(anio, mes, 0, 23, 59, 59);
-      whereClause.FechaSalida = { [Op.between]: [inicio, fin] };
+      if (fecha.includes('-')) {
+        const [anio, mes] = fecha.split('-');
+        whereClause.FechaSalida = { [Op.between]: [new Date(anio, mes - 1, 1), new Date(anio, mes, 0, 23, 59, 59)] };
+      } else {
+        const anio = parseInt(fecha);
+        whereClause.FechaSalida = { [Op.between]: [new Date(anio, 0, 1), new Date(anio, 11, 31, 23, 59, 59)] };
+      }
     }
 
     const viajes = await Viaje.findAll({
       where: whereClause,
       include: [
+        { model: User, as: 'pasajeros', attributes: ['IdUsuario'] },
         { model: Ruta, as: 'ruta', include: [
           { model: Ubicacion, as: 'origen' },
           { model: Ubicacion, as: 'destino' },
@@ -246,12 +260,13 @@ exports.ganancias = async (req, res) => {
       order: [['FechaSalida', 'DESC']],
     });
 
-    const total = viajes.reduce((sum, v) => {
-      const pasajeros = v.AsientosTotales - v.AsientosDisponibles;
-      return sum + pasajeros * Number(v.PrecioPorPasajero);
+    const viajesConIngreso = viajes.filter(v => v.pasajeros.length > 0);
+
+    const total = viajesConIngreso.reduce((sum, v) => {
+      return sum + v.pasajeros.length * Number(v.PrecioPorPasajero);
     }, 0);
 
-    res.json({ total, viajes });
+    res.json({ total, viajes: viajesConIngreso });
   } catch (error) {
     console.error('Error fetching ganancias:', error);
     res.status(500).json({ message: 'Error al obtener ganancias' });
