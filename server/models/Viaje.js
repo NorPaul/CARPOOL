@@ -1,63 +1,65 @@
 // server/models/Viaje.js
-// Modelo Sequelize para la tabla Viajes.
-//
-// Campos principales del schema original (carpooldb_schema_backup.sql):
-//   IDViaje, IDConductor, Origen, Destino, FechaHora, Asientos, Estado, Precio
+// Modelo Sequelize para la tabla Viajes — columnas reales de carpooldb.
 
 const { DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
 
-/**
- * Representa un viaje ofrecido por un conductor.
- * @property {number}  IDViaje     - PK auto-increment
- * @property {number}  IDConductor - FK hacia Usuarios
- * @property {string}  Origen      - Punto de partida
- * @property {string}  Destino     - Punto de llegada
- * @property {Date}    FechaHora   - Fecha y hora de salida
- * @property {number}  Asientos    - Lugares disponibles
- * @property {string}  Estado      - 'activo' | 'completado' | 'cancelado'
- * @property {number}  Precio      - Costo por pasajero
- */
 const Viaje = sequelize.define('Viaje', {
-  IDViaje: {
-    type:          DataTypes.INTEGER,
+  IdViaje: {
+    type:          DataTypes.BIGINT.UNSIGNED,
     primaryKey:    true,
     autoIncrement: true,
   },
-  IDConductor: {
-    type:       DataTypes.INTEGER,
+  IdRuta: {
+    type:       DataTypes.BIGINT.UNSIGNED,
     allowNull:  false,
-    references: { model: 'Usuarios', key: 'IDUsuario' },
   },
-  Origen: {
-    type:      DataTypes.STRING(200),
-    allowNull: false,
+  IdConductor: {
+    type:       DataTypes.BIGINT.UNSIGNED,
+    allowNull:  false,
   },
-  Destino: {
-    type:      DataTypes.STRING(200),
-    allowNull: false,
+  IdVehiculo: {
+    type:       DataTypes.BIGINT.UNSIGNED,
+    allowNull:  false,
   },
-  FechaHora: {
+  FechaSalida: {
     type:      DataTypes.DATE,
     allowNull: false,
   },
-  Asientos: {
-    type:         DataTypes.INTEGER,
-    allowNull:    false,
-    defaultValue: 1,
-    validate:     { min: 1, max: 8 },
+  LlegadaEstimada: {
+    type:      DataTypes.DATE,
+    allowNull: true,
   },
-  Estado: {
-    type:         DataTypes.ENUM('activo', 'completado', 'cancelado'),
-    defaultValue: 'activo',
+  AsientosTotales: {
+    type:      DataTypes.INTEGER,
+    allowNull: false,
   },
-  Precio: {
+  AsientosDisponibles: {
+    type:      DataTypes.INTEGER,
+    allowNull: false,
+  },
+  PrecioPorPasajero: {
     type:      DataTypes.DECIMAL(8, 2),
     allowNull: true,
   },
+  Notas: {
+    type:      DataTypes.TEXT,
+    allowNull: true,
+  },
+  ObservacionesFinales: {
+    type:      DataTypes.TEXT,
+    allowNull: true,
+  },
+  IdEstado: {
+    type:      DataTypes.BIGINT.UNSIGNED,
+    allowNull: false,
+    defaultValue: 1,
+  },
 }, {
-  tableName:  'Viajes',
+  tableName:  'viajes',
   timestamps: true,
+  createdAt: 'FechaPublicacion',
+  updatedAt: false,
 });
 
 module.exports = Viaje;

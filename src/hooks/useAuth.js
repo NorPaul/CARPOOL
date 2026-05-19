@@ -51,13 +51,24 @@ function useAuth() {
    * @throws {{ messages: string[] }} si la autenticación falla
    */
   const login = useCallback(async ({ Correo, Contrasena }) => {
-    // TODO: reemplazar con fetch('/api/auth/login', { method: 'POST', ... })
-    // Simulación de sesión para desarrollo sin backend
-    if (!Correo || !Contrasena) {
-      throw { messages: ['Completa todos los campos.'] };
+    try {
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: Correo, password: Contrasena })
+      });
+      
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw { messages: [data.message || 'Error al iniciar sesión'] };
+      }
+      
+      persistSession(data.user, data.token);
+    } catch (err) {
+      if (err.messages) throw err;
+      throw { messages: ['Error de red. Intenta nuevamente.'] };
     }
-    const mockUser = { id: 1, NombreCompleto: 'Usuario Demo', Correo };
-    persistSession(mockUser, 'mock-jwt-token');
   }, [persistSession]);
 
   /**
@@ -67,9 +78,29 @@ function useAuth() {
    * @throws {{ messages: string[] }} si el registro falla
    */
   const register = useCallback(async (userData) => {
-    // TODO: reemplazar con fetch('/api/auth/register', { method: 'POST', ... })
-    const mockUser = { id: 2, NombreCompleto: userData.NombreCompleto, Correo: userData.Correo };
-    persistSession(mockUser, 'mock-jwt-token');
+    try {
+      const response = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          NombreCompleto: userData.NombreCompleto,
+          Correo: userData.Correo,
+          Telefono: userData.Telefono,
+          Contrasena: userData.Contrasena
+        })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw { messages: [data.message || 'Error al registrar usuario'] };
+      }
+
+      persistSession(data.user, data.token);
+    } catch (err) {
+      if (err.messages) throw err;
+      throw { messages: ['Error de red. Intenta nuevamente.'] };
+    }
   }, [persistSession]);
 
   /**

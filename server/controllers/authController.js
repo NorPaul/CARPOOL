@@ -1,0 +1,93 @@
+const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
+const { User } = require('../models');
+
+const JWT_SECRET = process.env.JWT_SECRET || 'supersecretkey_change_in_production';
+
+exports.login = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    
+    if (!email || !password) {
+      return res.status(400).json({ message: 'Email and password are required' });
+    }
+
+    // Usamos el scope para incluir la contraseña en la búsqueda
+    const user = await User.scope('withPassword').findOne({ where: { Correo: email } });
+    if (!user) {
+      return res.status(401).json({ message: 'Invalid credentials' });
+    }
+
+    // Laravel uses $2y$ prefix, Node.js bcrypt expects $2b$ — they are identical algorithms
+    const hash = user.Contrasena.replace(/^\$2y\$/, '$2b$');
+    const isMatch = await bcrypt.compare(password, hash);
+    if (!isMatch) {
+      return res.status(401).json({ message: 'Invalid credentials' });
+    }
+
+    // Generar token JWT
+    const token = jwt.sign(
+      { id: user.IdUsuario, email: user.Correo, name: user.NombreCompleto },
+      JWT_SECRET,
+      { expiresIn: '1d' }
+    );
+
+    // No devolver la contraseña en la respuesta
+    const userData = user.toJSON();
+    delete userData.Contrasena;
+
+    res.json({ message: 'Login successful', token, user: userData });
+  } catch (error) {
+    console.error('Login error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+exports.register = async (req, res) => {
+  try {
+    const { NombreCompleto, Correo, Contrasena, Telefono } = req.body;
+
+    if (!NombreCompleto || !Correo || !Contrasena) {
+      return res.status(400).json({ message: 'Todos los campos obligatorios son requeridos.' });
+    }
+
+    // Validación de correo institucional (@colima.tecnm.mx)
+    if (!Correo.endsWith('@colima.tecnm.mx')) {
+      return res.status(400).json({ message: 'Solo se permiten correos institucionales (@colima.tecnm.mx).' });
+    }
+
+    // Verificar si el usuario ya existe
+    const existingUser = await User.findOne({ where: { Correo: Correo } });
+    if (existingUser) {
+      return res.status(400).json({ message: 'Este correo ya se encuentra registrado.' });
+    }
+
+    if (Contrasena.length < 8) {
+      return res.status(400).json({ message: 'La contraseña debe tener al menos 8 caracteres.' });
+    }
+
+    const hashedPassword = await bcrypt.hash(Contrasena, 10);
+    
+    const newUser = await User.create({
+      NombreCompleto,
+      Correo,
+      Contrasena: hashedPassword,
+      Telefono: Telefono || null,
+      Activo: true
+    });
+
+    const token = jwt.sign(
+      { id: newUser.IdUsuario, email: newUser.Correo, name: newUser.NombreCompleto },
+      JWT_SECRET,
+      { expiresIn: '1d' }
+    );
+
+    const userData = newUser.toJSON();
+    delete userData.Contrasena;
+
+    res.status(201).json({ message: 'Usuario registrado con éxito', token, user: userData });
+  } catch (error) {
+    console.error('Registration error:', error);
+    res.status(500).json({ message: 'Error en el servidor' });
+  }
+};
