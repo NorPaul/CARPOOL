@@ -27,7 +27,15 @@ const SolicitudViaje = sequelize.define('SolicitudViaje', {
   IdEstado: {
     type: DataTypes.BIGINT.UNSIGNED,
     allowNull: false,
-    defaultValue: 1, // 1=Pendiente, 2=Aceptada, 3=Rechazada, 4=Cancelada, 5=Expulsado
+    defaultValue: 1, // 1=Pendiente, 2=Aceptada, 3=Rechazada, 4=Cancelada, 5=Expulsado/Cancelado por conductor
+  },
+  Leido: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: false,
+  },
+  LeidoConductor: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: false,
   },
   FechaRespuesta: {
     type: DataTypes.DATE,

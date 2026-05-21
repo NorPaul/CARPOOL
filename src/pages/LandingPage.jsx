@@ -22,12 +22,63 @@ function LandingPage() {
 
       {/* Hero */}
       <section style={{ padding: '60px 20px 80px', textAlign: 'center', position: 'relative', background: 'radial-gradient(circle at 50% 0%, rgba(37,99,235,0.15) 0%, transparent 70%)' }}>
-        <img
-          src="/img/hero_carpool.png"
-          alt="Carpool"
-          onError={e => { e.target.style.display = 'none'; }}
-          style={{ maxWidth: '560px', width: '100%', borderRadius: '24px', border: '1px solid rgba(56,189,248,0.15)', boxShadow: '0 30px 80px rgba(0,0,0,0.5)', marginBottom: '48px', animation: 'float 4s ease-in-out infinite' }}
-        />
+        <svg viewBox="0 0 540 260" style={{ maxWidth: '540px', width: '100%', display: 'block', margin: '0 auto 48px', borderRadius: '24px', border: '1px solid rgba(56,189,248,0.15)', boxShadow: '0 30px 80px rgba(0,0,0,0.5)', animation: 'float 4s ease-in-out infinite' }} xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="carBodyG" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0%" stopColor="#1e3a8a"/>
+              <stop offset="100%" stopColor="#2563eb"/>
+            </linearGradient>
+            <radialGradient id="carGlowG" cx="50%" cy="80%" r="50%">
+              <stop offset="0%" stopColor="#2563eb" stopOpacity="0.3"/>
+              <stop offset="100%" stopColor="#2563eb" stopOpacity="0"/>
+            </radialGradient>
+          </defs>
+          <rect width="540" height="260" fill="#0f172a" rx="24"/>
+          <ellipse cx="275" cy="244" rx="210" ry="20" fill="url(#carGlowG)"/>
+          <line x1="22" y1="148" x2="80" y2="148" stroke="#38bdf8" strokeWidth="2.5" strokeLinecap="round" opacity="0.45"/>
+          <line x1="15" y1="166" x2="62" y2="166" stroke="#38bdf8" strokeWidth="1.5" strokeLinecap="round" opacity="0.28"/>
+          <line x1="35" y1="130" x2="75" y2="130" stroke="#38bdf8" strokeWidth="1.5" strokeLinecap="round" opacity="0.18"/>
+          <path d="M88,222 L88,207 L115,193 L148,118 L375,112 L418,164 L452,178 L458,196 L458,222 Z" fill="url(#carBodyG)"/>
+          <path d="M88,222 L88,207 L115,193 L148,118 L375,112 L418,164 L452,178 L458,196 L458,222 Z" fill="none" stroke="#38bdf8" strokeWidth="1.5"/>
+          <path d="M152,185 L158,120 L268,114 L268,185 Z" fill="rgba(56,189,248,0.13)" stroke="#38bdf8" strokeWidth="1.2"/>
+          <path d="M273,185 L273,114 L373,112 L413,162 L413,185 Z" fill="rgba(56,189,248,0.13)" stroke="#38bdf8" strokeWidth="1.2"/>
+          <line x1="270" y1="114" x2="270" y2="222" stroke="#38bdf8" strokeWidth="2" opacity="0.55"/>
+          <line x1="150" y1="185" x2="145" y2="222" stroke="#38bdf8" strokeWidth="1" opacity="0.35"/>
+          <line x1="414" y1="185" x2="414" y2="222" stroke="#38bdf8" strokeWidth="1" opacity="0.35"/>
+          <rect x="188" y="207" width="26" height="5" rx="2.5" fill="#38bdf8" opacity="0.7"/>
+          <rect x="308" y="207" width="26" height="5" rx="2.5" fill="#38bdf8" opacity="0.7"/>
+          <rect x="450" y="182" width="14" height="13" rx="3" fill="#fbbf24" opacity="0.92"/>
+          <ellipse cx="467" cy="189" rx="9" ry="6" fill="#fbbf24" opacity="0.2"/>
+          <rect x="84" y="195" width="7" height="20" rx="2" fill="#ef4444" opacity="0.88"/>
+          <path d="M456,198 L472,200 L472,220 L456,220 Z" fill="#1e3a8a" stroke="#38bdf8" strokeWidth="1"/>
+          <circle cx="160" cy="227" r="26" fill="#111827" stroke="#334155" strokeWidth="2"/>
+          <circle cx="160" cy="227" r="18" fill="#080e1e" stroke="#38bdf8" strokeWidth="1.5"/>
+          <circle cx="160" cy="227" r="7" fill="#1e3a8a" stroke="#38bdf8" strokeWidth="1"/>
+          <line x1="160" y1="209" x2="160" y2="219" stroke="#38bdf8" strokeWidth="1.5" opacity="0.8"/>
+          <line x1="160" y1="235" x2="160" y2="245" stroke="#38bdf8" strokeWidth="1.5" opacity="0.8"/>
+          <line x1="142" y1="227" x2="152" y2="227" stroke="#38bdf8" strokeWidth="1.5" opacity="0.8"/>
+          <line x1="168" y1="227" x2="178" y2="227" stroke="#38bdf8" strokeWidth="1.5" opacity="0.8"/>
+          <line x1="147" y1="214" x2="154" y2="221" stroke="#38bdf8" strokeWidth="1.5" opacity="0.7"/>
+          <line x1="166" y1="233" x2="173" y2="240" stroke="#38bdf8" strokeWidth="1.5" opacity="0.7"/>
+          <line x1="173" y1="214" x2="166" y2="221" stroke="#38bdf8" strokeWidth="1.5" opacity="0.7"/>
+          <line x1="154" y1="233" x2="147" y2="240" stroke="#38bdf8" strokeWidth="1.5" opacity="0.7"/>
+          <circle cx="378" cy="227" r="26" fill="#111827" stroke="#334155" strokeWidth="2"/>
+          <circle cx="378" cy="227" r="18" fill="#080e1e" stroke="#38bdf8" strokeWidth="1.5"/>
+          <circle cx="378" cy="227" r="7" fill="#1e3a8a" stroke="#38bdf8" strokeWidth="1"/>
+          <line x1="378" y1="209" x2="378" y2="219" stroke="#38bdf8" strokeWidth="1.5" opacity="0.8"/>
+          <line x1="378" y1="235" x2="378" y2="245" stroke="#38bdf8" strokeWidth="1.5" opacity="0.8"/>
+          <line x1="360" y1="227" x2="370" y2="227" stroke="#38bdf8" strokeWidth="1.5" opacity="0.8"/>
+          <line x1="386" y1="227" x2="396" y2="227" stroke="#38bdf8" strokeWidth="1.5" opacity="0.8"/>
+          <line x1="365" y1="214" x2="372" y2="221" stroke="#38bdf8" strokeWidth="1.5" opacity="0.7"/>
+          <line x1="384" y1="233" x2="391" y2="240" stroke="#38bdf8" strokeWidth="1.5" opacity="0.7"/>
+          <line x1="391" y1="214" x2="384" y2="221" stroke="#38bdf8" strokeWidth="1.5" opacity="0.7"/>
+          <line x1="372" y1="233" x2="365" y2="240" stroke="#38bdf8" strokeWidth="1.5" opacity="0.7"/>
+          <circle cx="498" cy="38" r="1.8" fill="#38bdf8" opacity="0.4"/>
+          <circle cx="468" cy="65" r="1.3" fill="#60a5fa" opacity="0.3"/>
+          <circle cx="518" cy="88" r="1.3" fill="#38bdf8" opacity="0.28"/>
+          <circle cx="58" cy="46" r="1.8" fill="#60a5fa" opacity="0.3"/>
+          <circle cx="40" cy="82" r="1.3" fill="#38bdf8" opacity="0.22"/>
+        </svg>
         <h2 style={{ fontSize: 'clamp(2rem,5vw,3.2rem)', fontWeight: 800, lineHeight: 1.2, margin: '0 auto 20px', maxWidth: '700px', background: 'linear-gradient(135deg,#f8fafc 30%,#38bdf8 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>
           Viaja más rápido, barato y con compañeros del Tec
         </h2>

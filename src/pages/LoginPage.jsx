@@ -5,14 +5,6 @@ import '../styles/Auth.css';
 
 /**
  * Página de inicio de sesión.
- *
- * Gestiona un formulario controlado con dos campos (Correo, Contrasena).
- * Al enviar, llama a auth.login(); si tiene éxito redirige al dashboard.
- * Si hay errores de validación los muestra en un bloque de alerta.
- *
- * Campos del formulario:
- * @field {string} Correo        — Email institucional (@colima.tecnm.mx)
- * @field {string} Contrasena    — Contraseña del usuario
  */
 function LoginPage() {
   const navigate = useNavigate();

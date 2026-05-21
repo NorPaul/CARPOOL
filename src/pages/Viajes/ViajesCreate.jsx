@@ -39,9 +39,12 @@ function ViajesCreate() {
           setVehiculos(dataVeh);
           setUbicaciones(dataUbi);
 
+          const firstVeh = dataVeh[0];
+          const defaultAsientos = firstVeh ? Math.min(3, firstVeh.Capacidad - 1) : 3;
           setFormData(prev => ({
             ...prev,
-            IdVehiculo: dataVeh.length > 0 ? dataVeh[0].IdVehiculo : '',
+            IdVehiculo: firstVeh ? firstVeh.IdVehiculo : '',
+            asientos: defaultAsientos,
             IdOrigen: dataUbi.length > 0 ? dataUbi[0].IdUbicacion : '',
             IdDestino: dataUbi.length > 1 ? dataUbi[1].IdUbicacion : (dataUbi.length > 0 ? dataUbi[0].IdUbicacion : '')
           }));
@@ -57,15 +60,51 @@ function ViajesCreate() {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    if (name === 'IdVehiculo') {
+      const veh = vehiculos.find(v => String(v.IdVehiculo) === String(value));
+      const max = veh ? veh.Capacidad - 1 : 10;
+      setFormData(prev => ({
+        ...prev,
+        IdVehiculo: value,
+        asientos: Math.min(Number(prev.asientos), max)
+      }));
+    } else if (name === 'asientos') {
+      const veh = vehiculos.find(v => String(v.IdVehiculo) === String(formData.IdVehiculo));
+      const max = veh ? veh.Capacidad - 1 : 10;
+      if (value === '') {
+        setFormData(prev => ({ ...prev, asientos: '' }));
+      } else {
+        const num = parseInt(value, 10);
+        if (!isNaN(num)) setFormData(prev => ({ ...prev, asientos: Math.max(1, Math.min(num, max)) }));
+      }
+    } else if (name === 'precio') {
+      if (value === '') {
+        setFormData(prev => ({ ...prev, precio: '' }));
+      } else {
+        const num = parseFloat(value);
+        if (!isNaN(num)) setFormData(prev => ({ ...prev, precio: Math.max(0, Math.min(num, 9999)) }));
+      }
+    } else {
+      setFormData(prev => ({ ...prev, [name]: value }));
+    }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (formData.IdOrigen === formData.IdDestino) {
-      setError('El origen y el destino no pueden ser el mismo.');
-      return;
-    }
+    if (!formData.IdOrigen) { setError('Debes seleccionar el origen.'); return; }
+    if (!formData.IdDestino) { setError('Debes seleccionar el destino.'); return; }
+    if (formData.IdOrigen === formData.IdDestino) { setError('El origen y el destino no pueden ser el mismo.'); return; }
+    if (!formData.fechaHora) { setError('Debes seleccionar una fecha y hora para el viaje.'); return; }
+    if (new Date(formData.fechaHora) <= new Date()) { setError('La fecha y hora de salida deben ser en el futuro. Por favor selecciona un horario válido.'); return; }
+    if (!formData.IdVehiculo) { setError('Debes seleccionar un vehículo.'); return; }
+    const vehSel = vehiculos.find(v => String(v.IdVehiculo) === String(formData.IdVehiculo));
+    const maxSel = vehSel ? vehSel.Capacidad - 1 : 10;
+    const asientosNum = parseInt(formData.asientos, 10);
+    if (isNaN(asientosNum) || asientosNum < 1) { setError('El número de asientos debe ser al menos 1.'); return; }
+    if (asientosNum > maxSel) { setError(`El vehículo tiene ${vehSel.Capacidad} asientos. Máximo ${maxSel} para pasajeros.`); return; }
+    const precioNum = parseFloat(formData.precio);
+    if (isNaN(precioNum) || precioNum < 0) { setError('El aporte individual no puede ser negativo.'); return; }
+    if (precioNum > 9999) { setError('El aporte individual no puede superar $9,999.'); return; }
 
     try {
       const token = localStorage.getItem('carpool_token');
@@ -84,6 +123,11 @@ function ViajesCreate() {
       setError(err.message);
     }
   };
+
+  const vehiculoSeleccionado = vehiculos.find(v => String(v.IdVehiculo) === String(formData.IdVehiculo));
+  const maxAsientos = vehiculoSeleccionado ? vehiculoSeleccionado.Capacidad - 1 : 10;
+
+  const filterFutureTime = (time) => time.getTime() > Date.now() + 5 * 60 * 1000;
 
   if (loading) return <Layout><p>Cargando...</p></Layout>;
 
@@ -140,6 +184,7 @@ function ViajesCreate() {
                 dateFormat="d 'de' MMMM yyyy, HH:mm"
                 locale="es"
                 minDate={new Date()}
+                filterTime={filterFutureTime}
                 placeholderText="Selecciona fecha y hora"
                 required
                 className="form-control"
@@ -162,11 +207,15 @@ function ViajesCreate() {
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '16px' }}>
               <div className="form-group">
                 <label className="form-label">Asientos Libres</label>
-                <input type="number" name="asientos" className="form-control" min="1" max="10" required value={formData.asientos} onChange={handleChange} />
+                <input type="number" name="asientos" className="form-control" min="1" max={maxAsientos} required value={formData.asientos} onChange={handleChange} />
+                <p style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: '4px' }}>
+                  Máx. {maxAsientos} {vehiculoSeleccionado ? `(vehículo de ${vehiculoSeleccionado.Capacidad} asientos)` : ''}
+                </p>
               </div>
               <div className="form-group">
                 <label className="form-label">Aporte Individual ($)</label>
-                <input type="number" name="precio" className="form-control" min="0" step="0.5" required value={formData.precio} onChange={handleChange} style={{ backgroundColor: 'var(--bg-dark)' }} />
+                <input type="number" name="precio" className="form-control" min="0" max="9999" step="0.5" required value={formData.precio} onChange={handleChange} style={{ backgroundColor: 'var(--bg-dark)' }} />
+                <p style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: '4px' }}>Máx. $9,999</p>
               </div>
             </div>
 

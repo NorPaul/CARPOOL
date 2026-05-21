@@ -41,7 +41,7 @@ app.use('/api/ubicaciones', ubicacionRoutes);
 sequelize.authenticate()
   .then(() => {
     console.log('✅ Connection to MySQL has been established successfully.');
-    return sequelize.sync({ force: false });
+    return sequelize.sync({ alter: process.env.NODE_ENV !== 'production' });
   })
   .then(() => {
     app.listen(PORT, () => {

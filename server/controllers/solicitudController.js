@@ -201,6 +201,9 @@ exports.cancelar = async (req, res) => {
     }
 
     if (solicitud.IdEstado === 4) return res.status(400).json({ message: 'Ya cancelada.' });
+    if (esConductor && viaje.IdEstado === 2) {
+      return res.status(400).json({ message: 'No puedes expulsar a un pasajero mientras el viaje está en curso.' });
+    }
 
     if (solicitud.IdEstado === 2) { // Aceptada -> Liberar lugares
       await viaje.update({ AsientosDisponibles: viaje.AsientosDisponibles + solicitud.AsientosSolicitados });
@@ -218,9 +221,25 @@ exports.cancelar = async (req, res) => {
 exports.dismiss = async (req, res) => {
   try {
     const solicitud = await SolicitudViaje.findByPk(req.params.solicitudId);
+    if (!solicitud) return res.status(404).json({ message: 'Solicitud no encontrada.' });
     if (solicitud.IdUsuario !== req.user.id) return res.status(403).json({ message: 'No autorizado' });
-    
-    await solicitud.update({ IdEstado: 4 }); // Marcar como cancelada/leída
+
+    await solicitud.update({ Leido: true });
+    res.json({ message: 'Notificación eliminada.' });
+  } catch (error) {
+    res.status(500).json({ message: 'Error al ocultar notificación' });
+  }
+};
+
+exports.dismissConductor = async (req, res) => {
+  try {
+    const solicitud = await SolicitudViaje.findByPk(req.params.solicitudId, {
+      include: [{ model: Viaje, as: 'viaje' }]
+    });
+    if (!solicitud) return res.status(404).json({ message: 'Solicitud no encontrada.' });
+    if (solicitud.viaje.IdConductor !== req.user.id) return res.status(403).json({ message: 'No autorizado' });
+
+    await solicitud.update({ LeidoConductor: true });
     res.json({ message: 'Notificación eliminada.' });
   } catch (error) {
     res.status(500).json({ message: 'Error al ocultar notificación' });

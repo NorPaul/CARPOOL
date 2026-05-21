@@ -9,20 +9,20 @@ exports.login = async (req, res) => {
     const { email, password } = req.body;
     
     if (!email || !password) {
-      return res.status(400).json({ message: 'Email and password are required' });
+      return res.status(400).json({ message: 'El correo y la contraseña son requeridos.' });
     }
 
     // Usamos el scope para incluir la contraseña en la búsqueda
     const user = await User.scope('withPassword').findOne({ where: { Correo: email } });
     if (!user) {
-      return res.status(401).json({ message: 'Invalid credentials' });
+      return res.status(401).json({ message: 'Credenciales incorrectas.' });
     }
 
     // Laravel uses $2y$ prefix, Node.js bcrypt expects $2b$ — they are identical algorithms
     const hash = user.Contrasena.replace(/^\$2y\$/, '$2b$');
     const isMatch = await bcrypt.compare(password, hash);
     if (!isMatch) {
-      return res.status(401).json({ message: 'Invalid credentials' });
+      return res.status(401).json({ message: 'Credenciales incorrectas.' });
     }
 
     // Generar token JWT

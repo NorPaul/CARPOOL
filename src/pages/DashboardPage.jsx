@@ -9,7 +9,9 @@ function DashboardPage() {
   const [data, setData] = useState({
     stats: { viajesConductor: 0, viajesPasajero: 0, ganancias: 0, reputacion: '0.0', pendientesCount: 0 },
     notificaciones: [],
-    enCursoPasajero: []
+    notifAceptadas: [],
+    enCursoPasajero: [],
+    notifCancelaciones: []
   });
   const [loading, setLoading] = useState(true);
 
@@ -42,7 +44,24 @@ function DashboardPage() {
       });
       setData(prev => ({
         ...prev,
-        notificaciones: prev.notificaciones.filter(n => n.IdSolicitud !== solicitudId)
+        notificaciones: prev.notificaciones.filter(n => n.IdSolicitud !== solicitudId),
+        notifAceptadas: prev.notifAceptadas.filter(n => n.IdSolicitud !== solicitudId)
+      }));
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const handleDismissConductor = async (solicitudId) => {
+    try {
+      const token = localStorage.getItem('carpool_token');
+      await fetch(`/api/solicitudes/${solicitudId}/dismiss-conductor`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      setData(prev => ({
+        ...prev,
+        notifCancelaciones: prev.notifCancelaciones.filter(n => n.IdSolicitud !== solicitudId)
       }));
     } catch (error) {
       console.error(error);
@@ -85,7 +104,7 @@ function DashboardPage() {
           <div className="card" style={{ padding: '20px', display: 'flex', flexDirection: 'column', justifyContent: 'center', borderLeft: '4px solid #10b981' }}>
             <p style={{ color: 'var(--text-muted)', fontSize: '0.65rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '4px' }}>Ingresos</p>
             <div style={{ fontSize: '1.8rem', fontWeight: 800, color: '#10b981' }}>
-              ${data.stats.ganancias.toLocaleString()}
+              ${Number(data.stats?.ganancias ?? 0).toLocaleString()}
             </div>
           </div>
         </div>
@@ -125,6 +144,37 @@ function DashboardPage() {
           </Link>
         ))}
 
+        {data.notifAceptadas?.map(n => (
+          <div key={n.IdSolicitud} className="notification-banner" style={{ background: n.viaje?.IdEstado === 3 ? 'linear-gradient(135deg,#7c3aed 0%,#5b21b6 100%)' : 'linear-gradient(135deg,#0ea5e9 0%,#0284c7 100%)', marginBottom: '12px' }}>
+            <div className="banner-icon" style={{ background: 'rgba(255,255,255,0.2)' }}>
+              {n.viaje?.IdEstado === 3 ? (
+                <svg width="20" height="20" fill="white" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+              ) : (
+                <svg width="20" height="20" fill="white" viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/></svg>
+              )}
+            </div>
+            <div style={{ flex: 1 }}>
+              <p style={{ fontWeight: 700, fontSize: '0.95rem', color: 'white' }}>
+                {n.viaje?.IdEstado === 3 ? '¡Viaje Completado!' : '¡Solicitud Aceptada!'}
+              </p>
+              <p style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.85)' }}>
+                {n.viaje?.IdEstado === 3
+                  ? `Llegaste a ${n.viaje?.ruta?.destino?.Nombre}. ¿Cómo fue tu experiencia?`
+                  : `Tienes lugar confirmado en el viaje a ${n.viaje?.ruta?.destino?.Nombre} con ${n.viaje?.conductor?.NombreCompleto?.split(' ')[0]}.`}
+              </p>
+            </div>
+            {n.viaje?.IdEstado === 3 ? (
+              <Link to={`/calificar/${n.IdViaje}/${n.viaje?.conductor?.IdUsuario}`} onClick={() => handleDismiss(n.IdSolicitud)} style={{ background: 'rgba(255,255,255,0.25)', border: 'none', color: 'white', cursor: 'pointer', padding: '6px 10px', borderRadius: '8px', fontSize: '0.75rem', fontWeight: 700, textDecoration: 'none', whiteSpace: 'nowrap' }}>
+                Calificar →
+              </Link>
+            ) : (
+              <button onClick={() => handleDismiss(n.IdSolicitud)} style={{ background: 'transparent', border: 'none', color: 'white', cursor: 'pointer', padding: '5px' }}>
+                <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+              </button>
+            )}
+          </div>
+        ))}
+
         {data.notificaciones.map(n => (
           <div key={n.IdSolicitud} className="notification-banner" style={{ background: `linear-gradient(135deg, ${n.IdEstado === 5 ? 'var(--danger-red)' : '#f59e0b'} 0%, ${n.IdEstado === 5 ? 'var(--danger-dark)' : '#d97706'} 100%)`, marginBottom: '12px' }}>
             <div className="banner-icon" style={{ background: 'rgba(255,255,255,0.2)' }}>
@@ -135,14 +185,37 @@ function DashboardPage() {
               )}
             </div>
             <div style={{ flex: 1 }}>
-              <p style={{ fontWeight: 700, fontSize: '0.95rem', color: 'white' }}>{n.IdEstado === 5 ? '¡Atención!' : 'Solicitud Rechazada'}</p>
+              <p style={{ fontWeight: 700, fontSize: '0.95rem', color: 'white' }}>
+                {n.IdEstado === 5
+                  ? (n.viaje?.IdEstado === 4 ? 'Viaje Cancelado' : '¡Atención!')
+                  : 'Solicitud Rechazada'}
+              </p>
               <p style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.8)' }}>
-                {n.IdEstado === 5 
-                  ? `Has sido removido del viaje a ${n.viaje?.ruta?.destino?.Nombre}`
+                {n.IdEstado === 5
+                  ? n.viaje?.IdEstado === 4
+                    ? `El conductor canceló el viaje a ${n.viaje?.ruta?.destino?.Nombre}.`
+                    : `Has sido removido del viaje a ${n.viaje?.ruta?.destino?.Nombre}.`
                   : `Tu solicitud para el viaje a ${n.viaje?.ruta?.destino?.Nombre} ha sido rechazada.`}
               </p>
             </div>
             <button onClick={() => handleDismiss(n.IdSolicitud)} style={{ background: 'transparent', border: 'none', color: 'white', cursor: 'pointer', padding: '5px' }}>
+              <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+          </div>
+        ))}
+
+        {data.notifCancelaciones?.map(n => (
+          <div key={n.IdSolicitud} className="notification-banner" style={{ background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)', marginBottom: '12px' }}>
+            <div className="banner-icon" style={{ background: 'rgba(255,255,255,0.2)' }}>
+              <svg width="20" height="20" fill="white" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
+            </div>
+            <div style={{ flex: 1 }}>
+              <p style={{ fontWeight: 700, fontSize: '0.95rem', color: 'white' }}>Pasajero canceló su lugar</p>
+              <p style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.85)' }}>
+                {n.usuario?.NombreCompleto} canceló su reserva en el viaje a {n.viaje?.ruta?.destino?.Nombre}.
+              </p>
+            </div>
+            <button onClick={() => handleDismissConductor(n.IdSolicitud)} style={{ background: 'transparent', border: 'none', color: 'white', cursor: 'pointer', padding: '5px' }}>
               <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
             </button>
           </div>

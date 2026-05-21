@@ -49,6 +49,10 @@ exports.store = async (req, res) => {
     const { contenido } = req.body;
     const userId = req.user.id;
 
+    if (!contenido || !contenido.trim()) {
+      return res.status(400).json({ message: 'El mensaje no puede estar vacío.' });
+    }
+
     const viaje = await Viaje.findByPk(viajeId);
     if (!viaje) return res.status(404).json({ message: 'Viaje no encontrado.' });
 

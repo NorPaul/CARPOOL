@@ -4,6 +4,46 @@ import Layout from '../../components/Layout';
 
 const PER_PAGE = 5;
 
+function FilterBar({ pendingFilters, setPendingFilters, onSubmit }) {
+  return (
+    <div className="card" style={{ padding: '16px 20px', marginBottom: '24px' }}>
+      <form onSubmit={onSubmit}
+        style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', alignItems: 'flex-end' }}>
+        <div>
+          <label style={{ fontSize: '0.65rem', color: 'var(--text-muted)', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', marginBottom: '6px' }}>Estado</label>
+          <select
+            className="form-control"
+            value={pendingFilters.estado}
+            onChange={e => setPendingFilters(p => ({ ...p, estado: e.target.value }))}
+            style={{ appearance: 'auto', backgroundColor: 'var(--surface-color)', fontSize: '0.85rem', padding: '8px 12px', width: '140px' }}
+          >
+            <option value="todos">Todos</option>
+            <option value="activos">Activos</option>
+            <option value="finalizados">Finalizados</option>
+            <option value="cancelados">Cancelados</option>
+          </select>
+        </div>
+        <div>
+          <label style={{ fontSize: '0.65rem', color: 'var(--text-muted)', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', marginBottom: '6px' }}>Período</label>
+          <select
+            className="form-control"
+            value={pendingFilters.fecha}
+            onChange={e => setPendingFilters(p => ({ ...p, fecha: e.target.value }))}
+            style={{ appearance: 'auto', backgroundColor: 'var(--surface-color)', fontSize: '0.85rem', padding: '8px 12px', width: '140px' }}
+          >
+            <option value="todos">Desde siempre</option>
+            <option value="mes">Este Mes</option>
+            <option value="anio">Este Año</option>
+          </select>
+        </div>
+        <button type="submit" className="btn btn-outline" style={{ padding: '8px 20px', fontSize: '0.85rem', width: 'auto', height: '38px' }}>
+          Filtrar
+        </button>
+      </form>
+    </div>
+  );
+}
+
 function paginate(arr, page) {
   const start = (page - 1) * PER_PAGE;
   return arr.slice(start, start + PER_PAGE);
@@ -102,17 +142,6 @@ function ViajesList() {
     } catch (err) { console.error(err); }
   };
 
-  const handleDismissAviso = async (solicitudId) => {
-    try {
-      const token = localStorage.getItem('carpool_token');
-      await fetch(`/api/solicitudes/${solicitudId}/dismiss`, {
-        method: 'DELETE',
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      setData(prev => ({ ...prev, avisos: prev.avisos.filter(a => a.IdSolicitud !== solicitudId) }));
-    } catch (err) { console.error(err); }
-  };
-
   const tieneNoLeidos = (viajeId) => {
     const m = data.ultimosMensajes?.[viajeId];
     return m && m.IdRemitente !== currentUser?.IdUsuario;
@@ -127,43 +156,12 @@ function ViajesList() {
 
   const [pendingFilters, setPendingFilters] = useState({ estado: 'activos', fecha: 'todos' });
 
-  const FilterBar = () => (
-    <div className="card" style={{ padding: '16px 20px', marginBottom: '24px' }}>
-      <form onSubmit={e => { e.preventDefault(); handleFilter('estado', pendingFilters.estado); setFilters(pendingFilters); fetchViajes(pendingFilters); }}
-        style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', alignItems: 'flex-end' }}>
-        <div>
-          <label style={{ fontSize: '0.65rem', color: 'var(--text-muted)', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', marginBottom: '6px' }}>Estado</label>
-          <select
-            className="form-control"
-            value={pendingFilters.estado}
-            onChange={e => setPendingFilters(p => ({ ...p, estado: e.target.value }))}
-            style={{ appearance: 'auto', backgroundColor: 'var(--surface-color)', fontSize: '0.85rem', padding: '8px 12px', width: '140px' }}
-          >
-            <option value="todos">Todos</option>
-            <option value="activos">Activos</option>
-            <option value="finalizados">Finalizados</option>
-            <option value="cancelados">Cancelados</option>
-          </select>
-        </div>
-        <div>
-          <label style={{ fontSize: '0.65rem', color: 'var(--text-muted)', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', marginBottom: '6px' }}>Período</label>
-          <select
-            className="form-control"
-            value={pendingFilters.fecha}
-            onChange={e => setPendingFilters(p => ({ ...p, fecha: e.target.value }))}
-            style={{ appearance: 'auto', backgroundColor: 'var(--surface-color)', fontSize: '0.85rem', padding: '8px 12px', width: '140px' }}
-          >
-            <option value="todos">Desde siempre</option>
-            <option value="mes">Este Mes</option>
-            <option value="anio">Este Año</option>
-          </select>
-        </div>
-        <button type="submit" className="btn btn-outline" style={{ padding: '8px 20px', fontSize: '0.85rem', width: 'auto', height: '38px' }}>
-          Filtrar
-        </button>
-      </form>
-    </div>
-  );
+  const handleFilterSubmit = (e) => {
+    e.preventDefault();
+    handleFilter('estado', pendingFilters.estado);
+    setFilters(pendingFilters);
+    fetchViajes(pendingFilters);
+  };
 
   return (
     <Layout>
@@ -186,31 +184,6 @@ function ViajesList() {
           </Link>
         </header>
 
-        {/* Avisos recientes */}
-        {data.avisos?.length > 0 && (
-          <div style={{ marginBottom: '24px' }}>
-            <p style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '10px' }}>Avisos Recientes</p>
-            {data.avisos.map(aviso => (
-              <div key={aviso.IdSolicitud} style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: '12px', padding: '14px 16px', marginBottom: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px' }}>
-                <div>
-                  <p style={{ fontSize: '0.85rem', fontWeight: 700, color: '#ef4444', marginBottom: '2px' }}>
-                    {aviso.IdEstado === 5 ? 'Fuiste expulsado de un viaje' : 'Tu solicitud fue rechazada'}
-                  </p>
-                  <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-                    {aviso.viaje?.ruta?.origen?.Nombre} → {aviso.viaje?.ruta?.destino?.Nombre}
-                  </p>
-                </div>
-                <button
-                  onClick={() => handleDismissAviso(aviso.IdSolicitud)}
-                  style={{ background: 'rgba(239,68,68,0.15)', border: '1px solid rgba(239,68,68,0.3)', color: '#ef4444', borderRadius: '8px', padding: '6px 14px', fontSize: '0.8rem', fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap' }}
-                >
-                  Entendido
-                </button>
-              </div>
-            ))}
-          </div>
-        )}
-
         {/* Tabs */}
         <div style={{ display: 'flex', background: 'rgba(255,255,255,0.02)', padding: '6px', borderRadius: '16px', marginBottom: '24px', border: '1px solid rgba(255,255,255,0.05)' }}>
           {['conductor', 'pasajero'].map(tab => (
@@ -225,7 +198,11 @@ function ViajesList() {
           ))}
         </div>
 
-        <FilterBar />
+        <FilterBar
+          pendingFilters={pendingFilters}
+          setPendingFilters={setPendingFilters}
+          onSubmit={handleFilterSubmit}
+        />
 
         {loading ? (
           <div className="text-center" style={{ padding: '40px' }}>
