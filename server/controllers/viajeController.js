@@ -84,9 +84,9 @@ exports.getAll = async (req, res) => {
       }
     }
 
-    // Avisos: solicitudes rechazadas (3) o expulsadas (5) del usuario
+    // Avisos: solicitudes rechazadas (3) o expulsadas (5) del usuario, no leídas
     const avisos = await SolicitudViaje.findAll({
-      where: { IdUsuario: userId, IdEstado: [3, 5] },
+      where: { IdUsuario: userId, IdEstado: [3, 5], [Op.or]: [{ Leido: false }, { Leido: null }] },
       include: [{
         model: Viaje, as: 'viaje',
         include: [{ model: Ruta, as: 'ruta', include: [

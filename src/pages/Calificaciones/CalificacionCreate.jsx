@@ -9,6 +9,7 @@ function CalificacionCreate() {
   const [fields, setFields] = useState({ estrellas: 5, comentario: '' });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [submitting, setSubmitting] = useState(false);
   const [hoveredStar, setHoveredStar] = useState(0);
 
   useEffect(() => {
@@ -33,6 +34,8 @@ function CalificacionCreate() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (submitting) return;
+    setSubmitting(true);
     try {
       const token = localStorage.getItem('carpool_token');
       const res = await fetch(`/api/calificaciones/${viajeId}/${usuarioId}`, {
@@ -52,6 +55,7 @@ function CalificacionCreate() {
       navigate('/viajes');
     } catch (err) {
       setError(err.message);
+      setSubmitting(false);
     }
   };
 
@@ -125,7 +129,7 @@ function CalificacionCreate() {
           </div>
 
           <div style={{ marginTop: '40px' }}>
-            <button type="submit" className="btn">ENVIAR CALIFICACIÓN</button>
+            <button type="submit" className="btn" disabled={submitting}>{submitting ? 'ENVIANDO...' : 'ENVIAR CALIFICACIÓN'}</button>
             <Link to="/viajes" className="btn btn-outline" style={{ marginTop: '12px', border: 'none', color: 'var(--text-muted)' }}>Omitir por ahora</Link>
           </div>
         </form>

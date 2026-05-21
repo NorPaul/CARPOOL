@@ -56,7 +56,7 @@ exports.update = async (req, res) => {
 
     await usuario.update({
       NombreCompleto: NombreCompleto || usuario.NombreCompleto,
-      Telefono: Telefono || usuario.Telefono
+      Telefono: Telefono !== undefined ? (Telefono || null) : usuario.Telefono
     });
 
     res.json({ message: 'Perfil actualizado correctamente', usuario });

@@ -15,13 +15,25 @@ function VehiculoCreate() {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFields(prev => ({ ...prev, [name]: value }));
+    if (name === 'capacidad') {
+      if (value === '') { setFields(prev => ({ ...prev, capacidad: '' })); return; }
+      const num = parseInt(value, 10);
+      if (!isNaN(num)) setFields(prev => ({ ...prev, capacidad: Math.max(2, Math.min(num, 10)) }));
+    } else {
+      setFields(prev => ({ ...prev, [name]: value }));
+    }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
+
+    const cap = parseInt(fields.capacidad, 10);
+    if (!fields.modelo.trim()) { setError('El modelo es requerido.'); setLoading(false); return; }
+    if (!fields.placas.trim()) { setError('Las placas son requeridas.'); setLoading(false); return; }
+    if (!fields.color.trim()) { setError('El color es requerido.'); setLoading(false); return; }
+    if (isNaN(cap) || cap < 2 || cap > 10) { setError('La capacidad debe ser entre 2 y 10 pasajeros.'); setLoading(false); return; }
 
     try {
       const token = localStorage.getItem('carpool_token');
@@ -72,7 +84,8 @@ function VehiculoCreate() {
           </div>
           <div className="form-group mb-6">
             <label className="form-label">Capacidad de pasajeros</label>
-            <input type="number" name="capacidad" className="form-control" min="1" max="10" value={fields.capacidad} onChange={handleChange} required />
+            <input type="number" name="capacidad" className="form-control" min="2" max="10" value={fields.capacidad} onChange={handleChange} required />
+            <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '4px' }}>Mínimo 2, máximo 10 pasajeros (incluyendo conductor)</p>
           </div>
 
           <button type="submit" className="btn" disabled={loading}>

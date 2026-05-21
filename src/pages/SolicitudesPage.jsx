@@ -127,6 +127,8 @@ function SolicitudesPage() {
                         <button onClick={() => handleAction(solicitud.IdSolicitud, 'rechazar')} className="btn btn-outline" style={{ padding: '8px 12px', fontSize: '0.75rem', color: 'var(--danger-text)', borderColor: 'var(--danger-soft)', width: 'auto' }}>Rechazar</button>
                         <button onClick={() => handleAction(solicitud.IdSolicitud, 'aceptar')} className="btn" style={{ padding: '8px 16px', fontSize: '0.75rem', background: 'var(--blue-primary)', width: 'auto' }}>Aceptar</button>
                       </>
+                    ) : viaje.IdEstado === 2 ? (
+                      <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', fontStyle: 'italic' }}>Viaje en curso</span>
                     ) : (
                       <button onClick={() => handleExpulsar(solicitud.IdSolicitud)} className="btn btn-outline" style={{ padding: '8px 12px', fontSize: '0.75rem', color: 'var(--danger-red)', borderColor: 'rgba(239, 68, 68, 0.3)', width: 'auto' }}>Expulsar</button>
                     )}

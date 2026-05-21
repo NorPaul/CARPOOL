@@ -633,6 +633,12 @@ body {
   font-weight: 700 !important;
 }
 
+.carpool-calendar .react-datepicker__time-container .react-datepicker__time-list-item--disabled {
+  color: rgba(255,255,255,0.2) !important;
+  cursor: not-allowed !important;
+  pointer-events: none !important;
+}
+
 .carpool-calendar .react-datepicker__triangle {
   display: none !important;
 }
